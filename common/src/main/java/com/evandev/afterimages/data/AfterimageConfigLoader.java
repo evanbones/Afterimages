@@ -42,11 +42,8 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener {
                     if (entityStr.startsWith("#")) {
                         ResourceLocation tagLoc = new ResourceLocation(entityStr.substring(1));
                         TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, tagLoc);
-
                         BuiltInRegistries.ENTITY_TYPE.getTag(tagKey).ifPresent(tag -> {
-                            for (Holder<EntityType<?>> holder : tag) {
-                                entities.add(holder.value());
-                            }
+                            for (Holder<EntityType<?>> holder : tag) entities.add(holder.value());
                         });
                     } else {
                         entities.add(BuiltInRegistries.ENTITY_TYPE.get(new ResourceLocation(entityStr)));
@@ -57,12 +54,14 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener {
                 }
 
                 if (!entities.isEmpty()) {
-                    double speedThreshold = obj.has("speed_threshold") ? obj.get("speed_threshold").getAsDouble() : 0.5;
-                    int duration = obj.has("duration") ? obj.get("duration").getAsInt() : 10;
+                    double speedThreshold = obj.has("speed_threshold") ? obj.get("speed_threshold").getAsDouble() : 0.1;
+                    int duration = obj.has("duration") ? obj.get("duration").getAsInt() : 15;
                     int color = obj.has("color") ? Integer.decode(obj.get("color").getAsString()) : 0xFFFFFF;
                     boolean overlay = obj.has("overlay_only") && obj.get("overlay_only").getAsBoolean();
 
-                    AfterimageConfig config = new AfterimageConfig(speedThreshold, duration, color, overlay);
+                    double startAlpha = obj.has("start_alpha") ? obj.get("start_alpha").getAsDouble() : 0.5;
+
+                    AfterimageConfig config = new AfterimageConfig(speedThreshold, duration, color, overlay, startAlpha);
 
                     for (EntityType<?> type : entities) {
                         CONFIGS.put(type, config);
@@ -77,5 +76,5 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener {
         Constants.LOG.info("Loaded {} afterimage configurations.", CONFIGS.size());
     }
 
-    public record AfterimageConfig(double speedThreshold, int duration, int color, boolean overlayOnly) {}
+    public record AfterimageConfig(double speedThreshold, int duration, int color, boolean overlayOnly, double startAlpha) {}
 }

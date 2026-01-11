@@ -36,7 +36,7 @@ public abstract class EntityRenderDispatcherMixin {
 
         if (entity instanceof AfterimageAccessor accessor) {
             var history = accessor.afterimages$getHistory();
-            if (history.size() < 2) return;
+            if (history.isEmpty()) return;
 
             var config = AfterimageConfigLoader.CONFIGS.get(entity.getType());
             if (config == null) return;
@@ -54,84 +54,61 @@ public abstract class EntityRenderDispatcherMixin {
             List<AfterimageAccessor.Snapshot> snapshots = new ArrayList<>(history);
             double renderTime = entity.level().getGameTime() + partialTicks;
 
-            for (int i = snapshots.size() - 2; i >= 0; i--) {
-                AfterimageAccessor.Snapshot newer = snapshots.get(i);
-                AfterimageAccessor.Snapshot older = snapshots.get(i + 1);
+            for (AfterimageAccessor.Snapshot snapshot : snapshots) {
+                double age = renderTime - snapshot.timestamp();
 
-                double dist = newer.position().distanceTo(older.position());
+                float ageProgress = (float) (age / config.duration());
+                if (ageProgress >= 1.0f) continue;
 
-                int steps = (int) Math.max(1, Math.ceil(dist / 0.05));
+                float alpha = (float) (config.startAlpha() * (1.0f - ageProgress));
 
-                for (int s = 0; s < steps; s++) {
-                    float stepT = (float) s / steps;
+                if (alpha <= 0.05f) continue;
 
-                    double interpX = Mth.lerp(stepT, newer.position().x, older.position().x);
-                    double interpY = Mth.lerp(stepT, newer.position().y, older.position().y);
-                    double interpZ = Mth.lerp(stepT, newer.position().z, older.position().z);
+                transparencyBuffer.setAlpha(alpha);
 
-                    double interpTime = Mth.lerp(stepT, (double)newer.timestamp(), (double)older.timestamp());
+                poseStack.pushPose();
 
-                    double age = renderTime - interpTime;
-                    float ageProgress = (float) (age / config.duration());
+                double entityX = Mth.lerp(partialTicks, entity.xo, entity.getX());
+                double entityY = Mth.lerp(partialTicks, entity.yo, entity.getY());
+                double entityZ = Mth.lerp(partialTicks, entity.zo, entity.getZ());
 
-                    if (ageProgress >= 1.0f) continue;
+                double offsetX = snapshot.position().x - entityX;
+                double offsetY = snapshot.position().y - entityY;
+                double offsetZ = snapshot.position().z - entityZ;
 
-                    float alpha = 0.08f * (1.0f - ageProgress);
+                poseStack.translate(x + offsetX, y + offsetY, z + offsetZ);
 
-                    if (alpha <= 0.001f) continue;
-                    transparencyBuffer.setAlpha(alpha);
+                try {
+                    float oldYRot = entity.getYRot();
+                    float oldXRot = entity.getXRot();
+                    float oldYBody = 0;
+                    float oldYHead = 0;
 
-                    poseStack.pushPose();
-
-                    double offsetX = interpX - Mth.lerp(partialTicks, entity.xo, entity.getX());
-                    double offsetY = interpY - Mth.lerp(partialTicks, entity.yo, entity.getY());
-                    double offsetZ = interpZ - Mth.lerp(partialTicks, entity.zo, entity.getZ());
-
-                    poseStack.translate(x + offsetX, y + offsetY, z + offsetZ);
-
-                    try {
-                        float oldYRot = entity.getYRot();
-                        float oldXRot = entity.getXRot();
-                        float oldYBody = 0;
-                        float oldYHead = 0;
-
-                        float interpYRot = Mth.rotLerp(stepT, newer.yRot(), older.yRot());
-                        float interpXRot = Mth.rotLerp(stepT, newer.xRot(), older.xRot());
-                        float interpYBody;
-                        float interpYHead;
-
-                        if (entity instanceof LivingEntity l) {
-                            oldYBody = l.yBodyRot;
-                            oldYHead = l.yHeadRot;
-                            interpYBody = Mth.rotLerp(stepT, newer.yBodyRot(), older.yBodyRot());
-                            interpYHead = Mth.rotLerp(stepT, newer.yHeadRot(), older.yHeadRot());
-
-                            l.yBodyRot = interpYBody;
-                            l.yHeadRot = interpYHead;
-                        }
-
-                        entity.setYRot(interpYRot);
-                        entity.setXRot(interpXRot);
-
-                        EntityRenderer<? super Entity> renderer = this.getRenderer(entity);
-                        renderer.render(entity, 0, 0, poseStack, transparencyBuffer, packedLight);
-
-                        entity.setYRot(oldYRot);
-                        entity.setXRot(oldXRot);
-                        if (entity instanceof LivingEntity l) {
-                            l.yBodyRot = oldYBody;
-                            l.yHeadRot = oldYHead;
-                        }
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if (entity instanceof LivingEntity l) {
+                        oldYBody = l.yBodyRot;
+                        oldYHead = l.yHeadRot;
+                        l.yBodyRot = snapshot.yBodyRot();
+                        l.yHeadRot = snapshot.yHeadRot();
                     }
-                    poseStack.popPose();
+                    entity.setYRot(snapshot.yRot());
+                    entity.setXRot(snapshot.xRot());
+
+                    baseRenderer.render(entity, 0, 0, poseStack, transparencyBuffer, packedLight);
+
+                    entity.setYRot(oldYRot);
+                    entity.setXRot(oldXRot);
+                    if (entity instanceof LivingEntity l) {
+                        l.yBodyRot = oldYBody;
+                        l.yHeadRot = oldYHead;
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+                poseStack.popPose();
             }
 
             RenderSystem.depthMask(true);
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             afterimages$isRenderingAfterimage = false;
         }
     }

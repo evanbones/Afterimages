@@ -16,7 +16,7 @@ public class TransparencyBufferSource implements MultiBufferSource {
     private final MultiBufferSource delegate;
     private final ResourceLocation texture;
     private float alpha = 1.0f;
-    private int rgb = 0xFFFFFF; // Default to white (no tint)
+    private int rgb = 0xFFFFFF;
 
     public TransparencyBufferSource(MultiBufferSource delegate, ResourceLocation texture) {
         this.delegate = delegate;
@@ -33,16 +33,8 @@ public class TransparencyBufferSource implements MultiBufferSource {
 
     @Override
     public @NotNull VertexConsumer getBuffer(@NotNull RenderType type) {
-        RenderType remappedType = remapToTranslucent(type);
+        RenderType remappedType = GhostRenderType.get(this.texture);
         return new AlphaVertexConsumer(delegate.getBuffer(remappedType), alpha, rgb);
-    }
-
-    private RenderType remapToTranslucent(RenderType type) {
-        String description = type.toString();
-        if (description.contains("glint")) {
-            return type;
-        }
-        return GhostRenderType.get(this.texture);
     }
 
     private static class GhostRenderType extends RenderType {
@@ -60,7 +52,7 @@ public class TransparencyBufferSource implements MultiBufferSource {
             RenderType.CompositeState state = RenderType.CompositeState.builder()
                     .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
                     .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
-                    .setTransparencyState(LIGHTNING_TRANSPARENCY)
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                     .setCullState(NO_CULL)
                     .setLightmapState(LIGHTMAP)
                     .setOverlayState(OVERLAY)
@@ -68,7 +60,7 @@ public class TransparencyBufferSource implements MultiBufferSource {
                     .createCompositeState(false);
 
             return RenderType.create(
-                    "afterimage_phosphor",
+                    "afterimage_ghost",
                     DefaultVertexFormat.NEW_ENTITY,
                     VertexFormat.Mode.QUADS,
                     256,
@@ -99,40 +91,17 @@ public class TransparencyBufferSource implements MultiBufferSource {
             );
             return this;
         }
-        @Override
-        public @NotNull VertexConsumer uv(float u, float v) {
-            delegate.uv(u, v);
-            return this;
-        }
-        @Override
-        public @NotNull VertexConsumer overlayCoords(int u, int v) {
-            delegate.overlayCoords(u, v);
-            return this;
-        }
-        @Override
-        public @NotNull VertexConsumer uv2(int u, int v) {
-            delegate.uv2(u, v);
-            return this;
-        }
-        @Override
-        public @NotNull VertexConsumer normal(float x, float y, float z) {
-            delegate.normal(x, y, z);
-            return this;
-        }
-        @Override
-        public void endVertex() {
-            delegate.endVertex();
-        }
-        @Override
-        public void defaultColor(int r, int g, int b, int a) {
+        @Override public @NotNull VertexConsumer uv(float u, float v) { delegate.uv(u, v); return this; }
+        @Override public @NotNull VertexConsumer overlayCoords(int u, int v) { delegate.overlayCoords(u, v); return this; }
+        @Override public @NotNull VertexConsumer uv2(int u, int v) { delegate.uv2(u, v); return this; }
+        @Override public @NotNull VertexConsumer normal(float x, float y, float z) { delegate.normal(x, y, z); return this; }
+        @Override public void endVertex() { delegate.endVertex(); }
+        @Override public void defaultColor(int r, int g, int b, int a) {
             float rScale = ((rgb >> 16) & 0xFF) / 255.0f;
             float gScale = ((rgb >> 8) & 0xFF) / 255.0f;
             float bScale = (rgb & 0xFF) / 255.0f;
             delegate.defaultColor((int)(r * rScale), (int)(g * gScale), (int)(b * bScale), (int) (a * this.alpha));
         }
-        @Override
-        public void unsetDefaultColor() {
-            delegate.unsetDefaultColor();
-        }
+        @Override public void unsetDefaultColor() { delegate.unsetDefaultColor(); }
     }
 }
