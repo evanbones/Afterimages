@@ -60,7 +60,7 @@ public class TransparencyBufferSource implements MultiBufferSource {
             RenderType.CompositeState state = RenderType.CompositeState.builder()
                     .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
                     .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
-                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setTransparencyState(LIGHTNING_TRANSPARENCY)
                     .setCullState(NO_CULL)
                     .setLightmapState(LIGHTMAP)
                     .setOverlayState(OVERLAY)
@@ -68,7 +68,7 @@ public class TransparencyBufferSource implements MultiBufferSource {
                     .createCompositeState(false);
 
             return RenderType.create(
-                    "afterimage",
+                    "afterimage_phosphor",
                     DefaultVertexFormat.NEW_ENTITY,
                     VertexFormat.Mode.QUADS,
                     256,

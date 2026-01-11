@@ -44,8 +44,6 @@ public abstract class EntityRenderDispatcherMixin {
             afterimages$isRenderingAfterimage = true;
 
             RenderSystem.depthMask(false);
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
 
             EntityRenderer<? super Entity> baseRenderer = this.getRenderer(entity);
             ResourceLocation entityTexture = baseRenderer.getTextureLocation(entity);
@@ -61,7 +59,8 @@ public abstract class EntityRenderDispatcherMixin {
                 AfterimageAccessor.Snapshot older = snapshots.get(i + 1);
 
                 double dist = newer.position().distanceTo(older.position());
-                int steps = (int) Math.max(1, Math.ceil(dist / 0.3));
+
+                int steps = (int) Math.max(1, Math.ceil(dist / 0.05));
 
                 for (int s = 0; s < steps; s++) {
                     float stepT = (float) s / steps;
@@ -74,9 +73,12 @@ public abstract class EntityRenderDispatcherMixin {
 
                     double age = renderTime - interpTime;
                     float ageProgress = (float) (age / config.duration());
-                    float alpha = 0.4f * (1.0f - Mth.clamp(ageProgress, 0.0f, 1.0f));
 
-                    if (alpha <= 0.01f) continue;
+                    if (ageProgress >= 1.0f) continue;
+
+                    float alpha = 0.08f * (1.0f - ageProgress);
+
+                    if (alpha <= 0.001f) continue;
                     transparencyBuffer.setAlpha(alpha);
 
                     poseStack.pushPose();
@@ -129,7 +131,6 @@ public abstract class EntityRenderDispatcherMixin {
             }
 
             RenderSystem.depthMask(true);
-            RenderSystem.disableBlend();
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             afterimages$isRenderingAfterimage = false;
         }
