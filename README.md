@@ -27,7 +27,7 @@ The JSON configuration accepts the following fields:
 
 * **`speed_threshold`**: The minimum speed (in blocks per tick) the entity must be moving to generate afterimages. Defaults to `0.5`.
 * **`duration`**: How long the afterimage trail lasts in ticks. Defaults to `10`.
-* **`entity`**: The ID of the entity to apply the effect to (e.g., `"minecraft:ender_pearl"`). This is optional; if omitted, the mod will infer the entity type from the JSON filename and namespace.
+* **`entity`**: The ID of the entity (e.g., `"minecraft:ender_pearl"`) or an entity type tag (e.g., `"#minecraft:arrows"`) to apply the effect to. This is optional; if omitted, the mod will infer the entity type from the JSON filename and namespace.
 * **`color`**: A hex color value to tint the afterimage. Defaults to `0xFFFFFF`.
 * **`overlay_only`** (Boolean): Defaults to `false`.
 
