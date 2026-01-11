@@ -10,6 +10,7 @@ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener {
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> resources, ResourceManager resourceManager, ProfilerFiller profiler) {
+    protected void apply(Map<ResourceLocation, JsonElement> resources, @NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
         CONFIGS.clear();
 
         resources.forEach((location, json) -> {
@@ -37,8 +38,6 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener {
                 }
 
                 EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(entityId);
-                if (type != EntityType.PIG && entityId.getPath().equals("pig")) {
-                }
 
                 double speedThreshold = obj.has("speed_threshold") ? obj.get("speed_threshold").getAsDouble() : 0.5;
                 int duration = obj.has("duration") ? obj.get("duration").getAsInt() : 10;
@@ -48,7 +47,7 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener {
                 CONFIGS.put(type, new AfterimageConfig(speedThreshold, duration, color, overlay));
 
             } catch (Exception e) {
-                Constants.LOG.error("Failed to load afterimage config for " + location, e);
+                Constants.LOG.error("Failed to load afterimage config for {}", location, e);
             }
         });
 

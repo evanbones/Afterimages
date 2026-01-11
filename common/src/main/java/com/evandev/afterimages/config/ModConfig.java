@@ -16,10 +16,6 @@ public class ModConfig {
 
     private static ModConfig INSTANCE;
 
-    public boolean showToast = true;
-    public boolean showChatMessages = true;
-    public boolean reloadEmi = true;
-
     public static ModConfig get() {
         if (INSTANCE == null) {
             load();

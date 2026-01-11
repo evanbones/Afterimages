@@ -32,16 +32,30 @@ public class EntityMixin implements AfterimageAccessor {
     @Override
     public void afterimages$tickHistory() {
         Entity self = (Entity) (Object) this;
+        long gameTime = self.level().getGameTime();
 
         var config = AfterimageConfigLoader.CONFIGS.get(self.getType());
+
         if (config == null) {
             if (!afterimages$afterimageHistory.isEmpty()) afterimages$afterimageHistory.clear();
             return;
         }
 
+        // 1. Time-based cleanup: Allows trails to fade out naturally when stopped
+        while (!afterimages$afterimageHistory.isEmpty()) {
+            Snapshot oldest = afterimages$afterimageHistory.peekLast();
+            if (gameTime - oldest.timestamp() > config.duration()) {
+                afterimages$afterimageHistory.removeLast();
+            } else {
+                break;
+            }
+        }
+
         double speed = self.getDeltaMovement().lengthSqr();
+
+        // 2. Only record new snapshots if moving fast enough.
+        // We DO NOT clear history here; we let the loop above fade them out.
         if (speed < config.speedThreshold() * config.speedThreshold()) {
-            if (!afterimages$afterimageHistory.isEmpty()) afterimages$afterimageHistory.removeLast();
             return;
         }
 
@@ -52,17 +66,14 @@ public class EntityMixin implements AfterimageAccessor {
             headRot = living.yHeadRot;
         }
 
-        if (afterimages$afterimageHistory.size() >= config.duration()) {
-            afterimages$afterimageHistory.removeLast();
-        }
-
         afterimages$afterimageHistory.addFirst(new Snapshot(
                 new Vec3(self.getX(), self.getY(), self.getZ()),
                 bodyRot,
                 headRot,
                 self.getYRot(),
                 self.getXRot(),
-                1.0f
+                1.0f,
+                gameTime
         ));
     }
 }
