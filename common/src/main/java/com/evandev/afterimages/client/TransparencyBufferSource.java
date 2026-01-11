@@ -1,5 +1,8 @@
 package com.evandev.afterimages.client;
 
+import com.evandev.afterimages.mixin.accessor.CompositeRenderTypeAccessor;
+import com.evandev.afterimages.mixin.accessor.CompositeStateAccessor;
+import com.evandev.afterimages.mixin.accessor.TextureStateShardAccessor;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -14,13 +17,13 @@ import java.util.Map;
 
 public class TransparencyBufferSource implements MultiBufferSource {
     private final MultiBufferSource delegate;
-    private final ResourceLocation texture;
+    private final ResourceLocation defaultTexture;
     private float alpha = 1.0f;
     private int rgb = 0xFFFFFF;
 
-    public TransparencyBufferSource(MultiBufferSource delegate, ResourceLocation texture) {
+    public TransparencyBufferSource(MultiBufferSource delegate, ResourceLocation defaultTexture) {
         this.delegate = delegate;
-        this.texture = texture;
+        this.defaultTexture = defaultTexture;
     }
 
     public void setAlpha(float alpha) {
@@ -33,8 +36,28 @@ public class TransparencyBufferSource implements MultiBufferSource {
 
     @Override
     public @NotNull VertexConsumer getBuffer(@NotNull RenderType type) {
-        RenderType remappedType = GhostRenderType.get(this.texture);
+        ResourceLocation targetTexture = getTextureFromRenderType(type);
+        RenderType remappedType = GhostRenderType.get(targetTexture);
         return new AlphaVertexConsumer(delegate.getBuffer(remappedType), alpha, rgb);
+    }
+
+    private ResourceLocation getTextureFromRenderType(RenderType type) {
+        try {
+            if (type instanceof RenderType.CompositeRenderType) {
+                var typeAccessor = (CompositeRenderTypeAccessor) (Object) type;
+                var state = typeAccessor.afterimages$getState();
+
+                var stateAccessor = (CompositeStateAccessor) (Object) state;
+                var textureState = stateAccessor.afterimages$getTextureState();
+
+                if (textureState instanceof RenderStateShard.TextureStateShard) {
+                    var textureShardAccessor = (TextureStateShardAccessor) (Object) textureState;
+                    return textureShardAccessor.afterimages$getTexture().orElse(this.defaultTexture);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return this.defaultTexture;
     }
 
     private static class GhostRenderType extends RenderType {
