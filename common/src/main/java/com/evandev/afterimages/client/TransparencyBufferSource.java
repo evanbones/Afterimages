@@ -42,25 +42,7 @@ public class TransparencyBufferSource implements MultiBufferSource {
     }
 
     private static class GhostRenderType extends RenderType {
-        private static final Method CREATE_METHOD;
         private static final Map<ResourceLocation, RenderType> CACHE = new HashMap<>();
-
-        static {
-            try {
-                CREATE_METHOD = RenderType.class.getDeclaredMethod("create",
-                        String.class,
-                        VertexFormat.class,
-                        VertexFormat.Mode.class,
-                        int.class,
-                        boolean.class,
-                        boolean.class,
-                        RenderType.CompositeState.class
-                );
-                CREATE_METHOD.setAccessible(true);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException("Failed to find RenderType.create method via reflection", e);
-            }
-        }
 
         private GhostRenderType(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize, boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
             super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);
@@ -81,19 +63,15 @@ public class TransparencyBufferSource implements MultiBufferSource {
                     .setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false);
 
-            try {
-                return (RenderType) CREATE_METHOD.invoke(null,
-                        "afterimage",
-                        DefaultVertexFormat.NEW_ENTITY,
-                        VertexFormat.Mode.QUADS,
-                        256,
-                        true,
-                        true,
-                        state
-                );
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to create afterimage RenderType", e);
-            }
+            return RenderType.create(
+                    "afterimage",
+                    DefaultVertexFormat.NEW_ENTITY,
+                    VertexFormat.Mode.QUADS,
+                    256,
+                    true,
+                    true,
+                    state
+            );
         }
     }
 
