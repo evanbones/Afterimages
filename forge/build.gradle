@@ -14,16 +14,16 @@ mixin {
 legacyForge {
     version = "${minecraft_version}-${forge_version}"
 
-    validateAccessTransformers = true
-
-    def at = file('src/main/resources/META-INF/accesstransformer.cfg')
+    def at = project(':common').file('src/main/resources/META-INF/accesstransformer.cfg')
     if (at.exists()) {
-        accessTransformers = at
+        accessTransformers.from(at)
     }
+
     parchment {
         minecraftVersion = parchment_minecraft
         mappingsVersion = parchment_version
     }
+
     runs {
         client {
             client()
@@ -36,6 +36,7 @@ legacyForge {
     mods {
         "${mod_id}" {
             sourceSet sourceSets.main
+            sourceSet project(":common").sourceSets.main
         }
     }
 }
