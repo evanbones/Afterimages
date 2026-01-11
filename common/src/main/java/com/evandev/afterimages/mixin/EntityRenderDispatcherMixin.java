@@ -51,6 +51,7 @@ public abstract class EntityRenderDispatcherMixin {
             ResourceLocation entityTexture = baseRenderer.getTextureLocation(entity);
 
             TransparencyBufferSource transparencyBuffer = new TransparencyBufferSource(buffer, entityTexture);
+            transparencyBuffer.setColor(config.color());
 
             List<AfterimageAccessor.Snapshot> snapshots = new ArrayList<>(history);
             double renderTime = entity.level().getGameTime() + partialTicks;

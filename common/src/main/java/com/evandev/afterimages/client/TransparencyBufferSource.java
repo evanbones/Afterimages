@@ -16,6 +16,7 @@ public class TransparencyBufferSource implements MultiBufferSource {
     private final MultiBufferSource delegate;
     private final ResourceLocation texture;
     private float alpha = 1.0f;
+    private int rgb = 0xFFFFFF; // Default to white (no tint)
 
     public TransparencyBufferSource(MultiBufferSource delegate, ResourceLocation texture) {
         this.delegate = delegate;
@@ -26,10 +27,14 @@ public class TransparencyBufferSource implements MultiBufferSource {
         this.alpha = alpha;
     }
 
+    public void setColor(int rgb) {
+        this.rgb = rgb;
+    }
+
     @Override
     public @NotNull VertexConsumer getBuffer(@NotNull RenderType type) {
         RenderType remappedType = remapToTranslucent(type);
-        return new AlphaVertexConsumer(delegate.getBuffer(remappedType), alpha);
+        return new AlphaVertexConsumer(delegate.getBuffer(remappedType), alpha, rgb);
     }
 
     private RenderType remapToTranslucent(RenderType type) {
@@ -74,7 +79,7 @@ public class TransparencyBufferSource implements MultiBufferSource {
         }
     }
 
-    private record AlphaVertexConsumer(VertexConsumer delegate, float alpha) implements VertexConsumer {
+    private record AlphaVertexConsumer(VertexConsumer delegate, float alpha, int rgb) implements VertexConsumer {
         @Override
         public @NotNull VertexConsumer vertex(double x, double y, double z) {
             delegate.vertex(x, y, z);
@@ -82,7 +87,16 @@ public class TransparencyBufferSource implements MultiBufferSource {
         }
         @Override
         public @NotNull VertexConsumer color(int red, int green, int blue, int alpha) {
-            delegate.color(red, green, blue, (int) (alpha * this.alpha));
+            float rScale = ((rgb >> 16) & 0xFF) / 255.0f;
+            float gScale = ((rgb >> 8) & 0xFF) / 255.0f;
+            float bScale = (rgb & 0xFF) / 255.0f;
+
+            delegate.color(
+                    (int) (red * rScale),
+                    (int) (green * gScale),
+                    (int) (blue * bScale),
+                    (int) (alpha * this.alpha)
+            );
             return this;
         }
         @Override
@@ -111,7 +125,10 @@ public class TransparencyBufferSource implements MultiBufferSource {
         }
         @Override
         public void defaultColor(int r, int g, int b, int a) {
-            delegate.defaultColor(r, g, b, (int) (a * this.alpha));
+            float rScale = ((rgb >> 16) & 0xFF) / 255.0f;
+            float gScale = ((rgb >> 8) & 0xFF) / 255.0f;
+            float bScale = (rgb & 0xFF) / 255.0f;
+            delegate.defaultColor((int)(r * rScale), (int)(g * gScale), (int)(b * bScale), (int) (a * this.alpha));
         }
         @Override
         public void unsetDefaultColor() {
