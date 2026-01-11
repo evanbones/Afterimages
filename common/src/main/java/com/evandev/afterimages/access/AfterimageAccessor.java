@@ -7,5 +7,5 @@ public interface AfterimageAccessor {
     Deque<Snapshot> afterimages$getHistory();
     void afterimages$tickHistory();
 
-    record Snapshot(Vec3 position, float yBodyRot, float yHeadRot, float xRot, float scale) {}
+    record Snapshot(Vec3 position, float yBodyRot, float yHeadRot, float yRot, float xRot, float scale) {}
 }

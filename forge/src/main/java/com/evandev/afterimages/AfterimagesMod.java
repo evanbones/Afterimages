@@ -1,7 +1,9 @@
 package com.evandev.afterimages;
 
 import com.evandev.afterimages.config.ClothConfigIntegration;
+import com.evandev.afterimages.data.AfterimageConfigLoader;
 import net.minecraftforge.client.ConfigScreenHandler;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;

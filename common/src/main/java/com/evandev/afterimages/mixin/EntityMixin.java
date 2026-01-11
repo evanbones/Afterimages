@@ -60,6 +60,7 @@ public class EntityMixin implements AfterimageAccessor {
                 new Vec3(self.getX(), self.getY(), self.getZ()),
                 bodyRot,
                 headRot,
+                self.getYRot(),
                 self.getXRot(),
                 1.0f
         ));

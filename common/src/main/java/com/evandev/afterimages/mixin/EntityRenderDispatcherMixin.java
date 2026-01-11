@@ -18,11 +18,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class EntityRenderDispatcherMixin {
 
     @Unique
-    private boolean isRenderingAfterimage = false;
+    private boolean afterimages$isRenderingAfterimage = false;
 
     @Inject(method = "render", at = @At("HEAD"))
     public <E extends Entity> void renderAfterimages(E entity, double x, double y, double z, float rotationYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci) {
-        if (isRenderingAfterimage) return;
+        if (afterimages$isRenderingAfterimage) return;
 
         if (entity instanceof AfterimageAccessor accessor) {
             var history = accessor.afterimages$getHistory();
@@ -31,7 +31,7 @@ public class EntityRenderDispatcherMixin {
             var config = AfterimageConfigLoader.CONFIGS.get(entity.getType());
             if (config == null) return;
 
-            isRenderingAfterimage = true;
+            afterimages$isRenderingAfterimage = true;
 
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
@@ -54,16 +54,18 @@ public class EntityRenderDispatcherMixin {
                     float oldXRot = entity.getXRot();
                     float oldYBody = 0;
                     float oldYHead = 0;
+
                     if (entity instanceof LivingEntity l) {
                         oldYBody = l.yBodyRot;
                         oldYHead = l.yHeadRot;
                         l.yBodyRot = snapshot.yBodyRot();
                         l.yHeadRot = snapshot.yHeadRot();
                     }
-                    entity.setYRot(snapshot.yHeadRot());
+
+                    entity.setYRot(snapshot.yRot());
                     entity.setXRot(snapshot.xRot());
 
-                    ((EntityRenderDispatcher) (Object) this).render(entity, 0, 0, 0, 0, partialTicks, poseStack, buffer, packedLight);
+                    ((EntityRenderDispatcher) (Object) this).render(entity, 0, 0, 0, 0, 1.0f, poseStack, buffer, packedLight);
 
                     entity.setYRot(oldYRot);
                     entity.setXRot(oldXRot);
@@ -72,6 +74,7 @@ public class EntityRenderDispatcherMixin {
                         l.yHeadRot = oldYHead;
                     }
                 } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
                 poseStack.popPose();
@@ -79,7 +82,7 @@ public class EntityRenderDispatcherMixin {
 
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             RenderSystem.disableBlend();
-            isRenderingAfterimage = false;
+            afterimages$isRenderingAfterimage = false;
         }
     }
 }
