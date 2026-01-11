@@ -13,12 +13,20 @@ public class ClothConfigIntegration {
 
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)
-                .setTitle(Component.literal("Afterimages Config"));
+                .setTitle(Component.translatable("title.afterimages.config"));
 
         builder.setSavingRunnable(ModConfig::save);
 
-        ConfigCategory general = builder.getOrCreateCategory(Component.literal("General"));
+        ConfigCategory general = builder.getOrCreateCategory(Component.translatable("category.afterimages.general"));
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
+
+        general.addEntry(entryBuilder.startDoubleField(Component.translatable("option.afterimages.step_size"), config.step_size)
+                .setDefaultValue(0.25)
+                .setMin(0.05)
+                .setMax(2.0)
+                .setTooltip(Component.translatable("tooltip.afterimages.step_size"))
+                .setSaveConsumer(newValue -> config.step_size = newValue)
+                .build());
 
         return builder.build();
     }

@@ -1,0 +1,6 @@
+{
+  "title.afterimages.config": "Afterimages Config",
+  "category.afterimages.general": "General Settings",
+  "option.afterimages.step_size": "Trail Step Size",
+  "tooltip.afterimages.step_size": "Controls the smoothness of the trail. Lower values = smoother but laggier."
+}

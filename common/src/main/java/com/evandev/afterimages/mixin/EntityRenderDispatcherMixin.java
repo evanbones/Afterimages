@@ -2,6 +2,7 @@ package com.evandev.afterimages.mixin;
 
 import com.evandev.afterimages.access.AfterimageAccessor;
 import com.evandev.afterimages.client.TransparencyBufferSource;
+import com.evandev.afterimages.config.ModConfig;
 import com.evandev.afterimages.data.AfterimageConfigLoader;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -12,6 +13,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -51,30 +53,98 @@ public abstract class EntityRenderDispatcherMixin {
             TransparencyBufferSource transparencyBuffer = new TransparencyBufferSource(buffer, entityTexture);
             transparencyBuffer.setColor(config.color());
 
-            List<AfterimageAccessor.Snapshot> snapshots = new ArrayList<>(history);
+            List<AfterimageAccessor.Snapshot> snapshots = new ArrayList<>();
             double renderTime = entity.level().getGameTime() + partialTicks;
 
-            for (AfterimageAccessor.Snapshot snapshot : snapshots) {
-                double age = renderTime - snapshot.timestamp();
+            boolean connectedToBody = false;
+            double timeGap = 0;
+            if (history.peekFirst() != null) {
+                timeGap = renderTime - history.peekFirst().timestamp();
+            }
 
-                float ageProgress = (float) (age / config.duration());
-                if (ageProgress >= 1.0f) continue;
+            if (timeGap < 2.0) {
+                connectedToBody = true;
+                double curX = Mth.lerp(partialTicks, entity.xo, entity.getX());
+                double curY = Mth.lerp(partialTicks, entity.yo, entity.getY());
+                double curZ = Mth.lerp(partialTicks, entity.zo, entity.getZ());
+                float curYRot = Mth.lerp(partialTicks, entity.yRotO, entity.getYRot());
+                float curXRot = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
+                float curYBody = 0;
+                float curYHead = 0;
 
+                if (entity instanceof LivingEntity l) {
+                    curYBody = Mth.lerp(partialTicks, l.yBodyRotO, l.yBodyRot);
+                    curYHead = Mth.lerp(partialTicks, l.yHeadRotO, l.yHeadRot);
+                }
+
+                snapshots.add(new AfterimageAccessor.Snapshot(
+                        new Vec3(curX, curY, curZ),
+                        curYBody, curYHead, curYRot, curXRot, 1.0f, (long) renderTime
+                ));
+            }
+
+            snapshots.addAll(history);
+
+            double stepSize = Math.max(0.05, ModConfig.get().step_size);
+            double maxAge = config.duration();
+
+            for (double age = stepSize; age < maxAge; age += stepSize) {
+                double targetTime = renderTime - age;
+
+                AfterimageAccessor.Snapshot before = null;
+                AfterimageAccessor.Snapshot after = null;
+
+                for (int i = 0; i < snapshots.size() - 1; i++) {
+                    AfterimageAccessor.Snapshot s1 = snapshots.get(i);
+                    AfterimageAccessor.Snapshot s2 = snapshots.get(i+1);
+
+                    double t1 = (i == 0 && connectedToBody) ? renderTime : s1.timestamp();
+                    double t2 = s2.timestamp();
+
+                    if (targetTime <= t1 && targetTime >= t2) {
+                        before = s1;
+                        after = s2;
+                        break;
+                    }
+                }
+
+                if (before == null) continue;
+
+                double t1 = (snapshots.indexOf(before) == 0 && connectedToBody) ? renderTime : before.timestamp();
+                double t2 = after.timestamp();
+                double delta = t1 - t2;
+
+                if (delta <= 0.0001) continue;
+
+                float progress = (float) ((t1 - targetTime) / delta);
+
+                float ageProgress = (float) (age / maxAge);
                 float alpha = (float) (config.startAlpha() * (1.0f - ageProgress));
 
-                if (alpha <= 0.05f) continue;
+                alpha *= (float) (stepSize / 0.25);
+
+                if (alpha <= 0.01f) continue;
 
                 transparencyBuffer.setAlpha(alpha);
 
+                double interpX = Mth.lerp(progress, before.position().x, after.position().x);
+                double interpY = Mth.lerp(progress, before.position().y, after.position().y);
+                double interpZ = Mth.lerp(progress, before.position().z, after.position().z);
+
+                float interpYRot = Mth.rotLerp(progress, before.yRot(), after.yRot());
+                float interpXRot = Mth.rotLerp(progress, before.xRot(), after.xRot());
+                float interpYBody = Mth.rotLerp(progress, before.yBodyRot(), after.yBodyRot());
+                float interpYHead = Mth.rotLerp(progress, before.yHeadRot(), after.yHeadRot());
+
                 poseStack.pushPose();
 
-                double entityX = Mth.lerp(partialTicks, entity.xo, entity.getX());
-                double entityY = Mth.lerp(partialTicks, entity.yo, entity.getY());
-                double entityZ = Mth.lerp(partialTicks, entity.zo, entity.getZ());
+                double curX = Mth.lerp(partialTicks, entity.xo, entity.getX());
+                double curY = Mth.lerp(partialTicks, entity.yo, entity.getY());
+                double curZ = Mth.lerp(partialTicks, entity.zo, entity.getZ());
 
-                double offsetX = snapshot.position().x - entityX;
-                double offsetY = snapshot.position().y - entityY;
-                double offsetZ = snapshot.position().z - entityZ;
+                double offsetX = interpX - curX;
+                double offsetY = interpY - curY;
+                double offsetZ = interpZ - curZ;
 
                 poseStack.translate(x + offsetX, y + offsetY, z + offsetZ);
 
@@ -87,11 +157,11 @@ public abstract class EntityRenderDispatcherMixin {
                     if (entity instanceof LivingEntity l) {
                         oldYBody = l.yBodyRot;
                         oldYHead = l.yHeadRot;
-                        l.yBodyRot = snapshot.yBodyRot();
-                        l.yHeadRot = snapshot.yHeadRot();
+                        l.yBodyRot = interpYBody;
+                        l.yHeadRot = interpYHead;
                     }
-                    entity.setYRot(snapshot.yRot());
-                    entity.setXRot(snapshot.xRot());
+                    entity.setYRot(interpYRot);
+                    entity.setXRot(interpXRot);
 
                     baseRenderer.render(entity, 0, 0, poseStack, transparencyBuffer, packedLight);
 
