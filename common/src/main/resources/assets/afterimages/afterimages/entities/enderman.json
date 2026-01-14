@@ -1,0 +1,7 @@
+{
+  "entity": "minecraft:enderman",
+  "speed_threshold": 0.1,
+  "duration": 5,
+  "color": "#6A317F",
+  "overlay_only": true
+}

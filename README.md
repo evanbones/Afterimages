@@ -1,41 +1,84 @@
 # Afterimages
 
-### Usage
+A lightweight, data-driven mod that adds visual afterimage trails to entities. You can configure which entities have afterimages, how they look, and when they appear—entirely through Resource Packs.
 
-This mod is entirely data-driven, meaning you can configure which entities have afterimages and customize their appearance using resource packs.
+### Features
 
-#### Adding Afterimages to Entities
+* **Data-Driven:** Every aspect of the afterimage (duration, color, triggers) is controlled via JSON files.
+* **Mod Compatible:** Built-in support for **Combat Roll** and other mods in the future, upon request.
 
-To add an afterimage to an entity, create a JSON file in the following directory structure within your resource pack:
+---
 
+### Global Configuration
+
+This mod uses **Cloth Config** for global settings. You can access the config menu via Mod Menu (on Fabric) or the configured keybind.
+
+| Option | Default | Description |
+| --- | --- | --- |
+| **Step Size** | `0.25` | Controls the density of the afterimage trail. Lower values (e.g. `0.1`) create smoother, connected trails but may impact performance. Higher values create distinct "snapshots". |
+
+---
+
+### Entity Configuration
+
+To add an afterimage to an entity, create a JSON file in your resource pack at:
 `assets/<namespace>/afterimages/entities/<entity_name>.json`
 
-**Example:**
-To give an Arrow an afterimage, create a file at `assets/minecraft/afterimages/entities/arrow.json`:
+#### Example: Standard Arrow Trail
+
+`assets/example/afterimages/entities/arrow.json`
 
 ```json
 {
+  "entity": "minecraft:arrow",
   "speed_threshold": 0.5,
-  "duration": 10
+  "duration": 5,
+  "color": "0xFFFFFF",
+  "start_alpha": 0.6
 }
 
 ```
 
+#### Example: Combat Roll Exclusive
+
+`assets/example/afterimages/entities/player.json`
+
+```json
+{
+  "entity": "minecraft:player",
+  "combat_roll_only": true,
+  "duration": 15,
+  "start_alpha": 0.8
+}
+```
+
 #### Configuration Fields
 
-The JSON configuration accepts the following fields:
+| Field | Type | Default | Description                                                                                                                          |
+| --- | --- | --- |--------------------------------------------------------------------------------------------------------------------------------------|
+| `entity` | String | *Filename* | The entity ID (e.g. `minecraft:ender_pearl`). If omitted, the mod tries to guess based on the JSON filename.                         |
+| `speed_threshold` | Double | `0.5` | The minimum speed (blocks/tick) required to trigger the effect. Ignored if `combat_roll_only` is true.                               |
+| `duration` | Integer | `10` | How long the afterimage trail lasts in ticks.                                                                                        |
+| `color` | Hex String | `"0xFFFFFF"` | A hex color code to tint the afterimage.                                                                                             |
+| `start_alpha` | Float | `0.5` | The opacity of the afterimage when it first appears (0.0 to 1.0).                                                                    |
+| `overlay_only` | Boolean | `false` | If `true`, the afterimage will render *only* the overlay layer (e.g., skin outer layer, armor glint). Useful for ghost-like effects. |
+| `combat_roll_only` | Boolean | `false` | If `true`, afterimages will **only** appear when the entity is performing a Combat Roll (requires the **Combat Roll** mod).          |
 
-* **`speed_threshold`**: The minimum speed (in blocks per tick) the entity must be moving to generate afterimages. Defaults to `0.5`.
-* **`duration`**: How long the afterimage trail lasts in ticks. Defaults to `10`.
-* **`entity`**: The ID of the entity (e.g., `"minecraft:ender_pearl"`) or an entity type tag (e.g., `"#minecraft:arrows"`) to apply the effect to. This is optional; if omitted, the mod will infer the entity type from the JSON filename and namespace.
-* **`color`**: A hex color value to tint the afterimage. Defaults to `0xFFFFFF`.
-* **`overlay_only`** (Boolean): Defaults to `false`.
+---
+
+### Mod Integration
+
+#### Combat Roll
+
+Afterimages has native support for the **[Combat Roll](https://modrinth.com/mod/combat-roll)** mod.
+
+* **Usage:** Set `"combat_roll_only": true` in your player configuration file to make trails appear exclusively during a roll dodge.
+
+---
 
 ### License
 
 This project is licensed under the **MIT License**.
-
----
 
 ### Contributing
 

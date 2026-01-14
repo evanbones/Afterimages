@@ -17,6 +17,7 @@ public class TransparencyBufferSource implements MultiBufferSource {
     private final ResourceLocation texture;
     private float alpha = 1.0f;
     private int rgb = 0xFFFFFF;
+    private boolean overlayOnly = false;
 
     public TransparencyBufferSource(MultiBufferSource delegate, ResourceLocation texture) {
         this.delegate = delegate;
@@ -31,10 +32,22 @@ public class TransparencyBufferSource implements MultiBufferSource {
         this.rgb = rgb;
     }
 
+    public void setOverlayOnly(boolean overlayOnly) {
+        this.overlayOnly = overlayOnly;
+    }
+
     @Override
     public @NotNull VertexConsumer getBuffer(@NotNull RenderType type) {
+        if (this.overlayOnly) {
+            if (type.toString().contains("eyes")) {
+                return new AlphaVertexConsumer(delegate.getBuffer(type), alpha, rgb, true);
+            } else {
+                return new NoOpVertexConsumer();
+            }
+        }
+
         RenderType remappedType = GhostRenderType.get(this.texture);
-        return new AlphaVertexConsumer(delegate.getBuffer(remappedType), alpha, rgb);
+        return new AlphaVertexConsumer(delegate.getBuffer(remappedType), alpha, rgb, false);
     }
 
     private static class GhostRenderType extends RenderType {
@@ -71,7 +84,7 @@ public class TransparencyBufferSource implements MultiBufferSource {
         }
     }
 
-    private record AlphaVertexConsumer(VertexConsumer delegate, float alpha, int rgb) implements VertexConsumer {
+    private record AlphaVertexConsumer(VertexConsumer delegate, float alpha, int rgb, boolean premultiplyAlpha) implements VertexConsumer {
         @Override
         public @NotNull VertexConsumer vertex(double x, double y, double z) {
             delegate.vertex(x, y, z);
@@ -83,11 +96,19 @@ public class TransparencyBufferSource implements MultiBufferSource {
             float gScale = ((rgb >> 8) & 0xFF) / 255.0f;
             float bScale = (rgb & 0xFF) / 255.0f;
 
+            float alphaFactor = this.alpha;
+
+            if (premultiplyAlpha) {
+                rScale *= alphaFactor;
+                gScale *= alphaFactor;
+                bScale *= alphaFactor;
+            }
+
             delegate.color(
                     (int) (red * rScale),
                     (int) (green * gScale),
                     (int) (blue * bScale),
-                    (int) (alpha * this.alpha)
+                    (int) (alpha * alphaFactor)
             );
             return this;
         }
@@ -100,8 +121,28 @@ public class TransparencyBufferSource implements MultiBufferSource {
             float rScale = ((rgb >> 16) & 0xFF) / 255.0f;
             float gScale = ((rgb >> 8) & 0xFF) / 255.0f;
             float bScale = (rgb & 0xFF) / 255.0f;
-            delegate.defaultColor((int)(r * rScale), (int)(g * gScale), (int)(b * bScale), (int) (a * this.alpha));
+
+            float alphaFactor = this.alpha;
+            if (premultiplyAlpha) {
+                rScale *= alphaFactor;
+                gScale *= alphaFactor;
+                bScale *= alphaFactor;
+            }
+
+            delegate.defaultColor((int)(r * rScale), (int)(g * gScale), (int)(b * bScale), (int) (a * alphaFactor));
         }
         @Override public void unsetDefaultColor() { delegate.unsetDefaultColor(); }
+    }
+
+    private static class NoOpVertexConsumer implements VertexConsumer {
+        @Override public @NotNull VertexConsumer vertex(double x, double y, double z) { return this; }
+        @Override public @NotNull VertexConsumer color(int red, int green, int blue, int alpha) { return this; }
+        @Override public @NotNull VertexConsumer uv(float u, float v) { return this; }
+        @Override public @NotNull VertexConsumer overlayCoords(int u, int v) { return this; }
+        @Override public @NotNull VertexConsumer uv2(int u, int v) { return this; }
+        @Override public @NotNull VertexConsumer normal(float x, float y, float z) { return this; }
+        @Override public void endVertex() {}
+        @Override public void defaultColor(int r, int g, int b, int a) {}
+        @Override public void unsetDefaultColor() {}
     }
 }

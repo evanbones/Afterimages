@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener {
-    private static final Gson GSON = new Gson();
     public static final Map<EntityType<?>, AfterimageConfig> CONFIGS = new HashMap<>();
+    private static final Gson GSON = new Gson();
 
     public AfterimageConfigLoader() {
         super(GSON, "afterimages/entities");
@@ -58,10 +58,11 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener {
                     int duration = obj.has("duration") ? obj.get("duration").getAsInt() : 15;
                     int color = obj.has("color") ? Integer.decode(obj.get("color").getAsString()) : 0xFFFFFF;
                     boolean overlay = obj.has("overlay_only") && obj.get("overlay_only").getAsBoolean();
+                    boolean combatRollOnly = obj.has("combat_roll_only") && obj.get("combat_roll_only").getAsBoolean();
 
                     double startAlpha = obj.has("start_alpha") ? obj.get("start_alpha").getAsDouble() : 0.5;
 
-                    AfterimageConfig config = new AfterimageConfig(speedThreshold, duration, color, overlay, startAlpha);
+                    AfterimageConfig config = new AfterimageConfig(speedThreshold, duration, color, overlay, startAlpha, combatRollOnly);
 
                     for (EntityType<?> type : entities) {
                         CONFIGS.put(type, config);
@@ -76,5 +77,7 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener {
         Constants.LOG.info("Loaded {} afterimage configurations.", CONFIGS.size());
     }
 
-    public record AfterimageConfig(double speedThreshold, int duration, int color, boolean overlayOnly, double startAlpha) {}
+    public record AfterimageConfig(double speedThreshold, int duration, int color, boolean overlayOnly,
+                                   double startAlpha, boolean combatRollOnly) {
+    }
 }

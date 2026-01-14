@@ -1,6 +1,7 @@
 {
   "entity": "minecraft:player",
-  "speed_threshold": 0.2,
+  "speed_threshold": 0.1,
   "duration": 5,
-  "color": "#FFFFFF"
+  "color": "#FFFFFF",
+  "combat_roll_only": true
 }

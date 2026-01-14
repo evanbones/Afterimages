@@ -2,6 +2,8 @@ package com.evandev.afterimages.mixin;
 
 import com.evandev.afterimages.access.AfterimageAccessor;
 import com.evandev.afterimages.data.AfterimageConfigLoader;
+import com.evandev.afterimages.compat.CombatRollCompat;
+import com.evandev.afterimages.platform.Services;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
@@ -41,7 +43,6 @@ public class EntityMixin implements AfterimageAccessor {
             return;
         }
 
-        // 1. Time-based cleanup: Allows trails to fade out naturally when stopped
         while (!afterimages$afterimageHistory.isEmpty()) {
             Snapshot oldest = afterimages$afterimageHistory.peekLast();
             if (gameTime - oldest.timestamp() > config.duration()) {
@@ -51,13 +52,22 @@ public class EntityMixin implements AfterimageAccessor {
             }
         }
 
-        double speed = self.getDeltaMovement().lengthSqr();
+        boolean shouldRecord = false;
 
-        // 2. Only record new snapshots if moving fast enough.
-        // We DO NOT clear history here; we let the loop above fade them out.
-        if (speed < config.speedThreshold() * config.speedThreshold()) {
-            return;
+        if (config.combatRollOnly()) {
+            if (Services.PLATFORM.isModLoaded("combatroll")) {
+                if (CombatRollCompat.isRolling(self)) {
+                    shouldRecord = true;
+                }
+            }
+        } else {
+            double speed = self.getDeltaMovement().lengthSqr();
+            if (speed >= config.speedThreshold() * config.speedThreshold()) {
+                shouldRecord = true;
+            }
         }
+
+        if (!shouldRecord) return;
 
         float bodyRot = 0;
         float headRot = self.getYRot();
