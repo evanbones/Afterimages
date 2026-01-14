@@ -86,12 +86,13 @@ public class TransparencyBufferSource implements MultiBufferSource {
 
     private record AlphaVertexConsumer(VertexConsumer delegate, float alpha, int rgb, boolean premultiplyAlpha) implements VertexConsumer {
         @Override
-        public @NotNull VertexConsumer vertex(double x, double y, double z) {
-            delegate.vertex(x, y, z);
+        public @NotNull VertexConsumer addVertex(float x, float y, float z) {
+            delegate.addVertex(x, y, z);
             return this;
         }
+
         @Override
-        public @NotNull VertexConsumer color(int red, int green, int blue, int alpha) {
+        public @NotNull VertexConsumer setColor(int red, int green, int blue, int alpha) {
             float rScale = ((rgb >> 16) & 0xFF) / 255.0f;
             float gScale = ((rgb >> 8) & 0xFF) / 255.0f;
             float bScale = (rgb & 0xFF) / 255.0f;
@@ -104,7 +105,7 @@ public class TransparencyBufferSource implements MultiBufferSource {
                 bScale *= alphaFactor;
             }
 
-            delegate.color(
+            delegate.setColor(
                     (int) (red * rScale),
                     (int) (green * gScale),
                     (int) (blue * bScale),
@@ -112,37 +113,38 @@ public class TransparencyBufferSource implements MultiBufferSource {
             );
             return this;
         }
-        @Override public @NotNull VertexConsumer uv(float u, float v) { delegate.uv(u, v); return this; }
-        @Override public @NotNull VertexConsumer overlayCoords(int u, int v) { delegate.overlayCoords(u, v); return this; }
-        @Override public @NotNull VertexConsumer uv2(int u, int v) { delegate.uv2(u, v); return this; }
-        @Override public @NotNull VertexConsumer normal(float x, float y, float z) { delegate.normal(x, y, z); return this; }
-        @Override public void endVertex() { delegate.endVertex(); }
-        @Override public void defaultColor(int r, int g, int b, int a) {
-            float rScale = ((rgb >> 16) & 0xFF) / 255.0f;
-            float gScale = ((rgb >> 8) & 0xFF) / 255.0f;
-            float bScale = (rgb & 0xFF) / 255.0f;
 
-            float alphaFactor = this.alpha;
-            if (premultiplyAlpha) {
-                rScale *= alphaFactor;
-                gScale *= alphaFactor;
-                bScale *= alphaFactor;
-            }
-
-            delegate.defaultColor((int)(r * rScale), (int)(g * gScale), (int)(b * bScale), (int) (a * alphaFactor));
+        @Override
+        public @NotNull VertexConsumer setUv(float u, float v) {
+            delegate.setUv(u, v);
+            return this;
         }
-        @Override public void unsetDefaultColor() { delegate.unsetDefaultColor(); }
+
+        @Override
+        public @NotNull VertexConsumer setUv1(int u, int v) {
+            delegate.setUv1(u, v);
+            return this;
+        }
+
+        @Override
+        public @NotNull VertexConsumer setUv2(int u, int v) {
+            delegate.setUv2(u, v);
+            return this;
+        }
+
+        @Override
+        public @NotNull VertexConsumer setNormal(float x, float y, float z) {
+            delegate.setNormal(x, y, z);
+            return this;
+        }
     }
 
     private static class NoOpVertexConsumer implements VertexConsumer {
-        @Override public @NotNull VertexConsumer vertex(double x, double y, double z) { return this; }
-        @Override public @NotNull VertexConsumer color(int red, int green, int blue, int alpha) { return this; }
-        @Override public @NotNull VertexConsumer uv(float u, float v) { return this; }
-        @Override public @NotNull VertexConsumer overlayCoords(int u, int v) { return this; }
-        @Override public @NotNull VertexConsumer uv2(int u, int v) { return this; }
-        @Override public @NotNull VertexConsumer normal(float x, float y, float z) { return this; }
-        @Override public void endVertex() {}
-        @Override public void defaultColor(int r, int g, int b, int a) {}
-        @Override public void unsetDefaultColor() {}
+        @Override public @NotNull VertexConsumer addVertex(float x, float y, float z) { return this; }
+        @Override public @NotNull VertexConsumer setColor(int red, int green, int blue, int alpha) { return this; }
+        @Override public @NotNull VertexConsumer setUv(float u, float v) { return this; }
+        @Override public @NotNull VertexConsumer setUv1(int u, int v) { return this; }
+        @Override public @NotNull VertexConsumer setUv2(int u, int v) { return this; }
+        @Override public @NotNull VertexConsumer setNormal(float x, float y, float z) { return this; }
     }
 }

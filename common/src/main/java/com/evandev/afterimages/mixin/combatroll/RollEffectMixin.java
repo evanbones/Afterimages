@@ -1,7 +1,7 @@
 package com.evandev.afterimages.mixin.combatroll;
 
 import com.evandev.afterimages.compat.CombatRollCompat;
-import net.combatroll.client.RollEffect;
+import net.combat_roll.client.RollEffect;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;

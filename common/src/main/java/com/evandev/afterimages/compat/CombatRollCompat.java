@@ -1,7 +1,7 @@
 package com.evandev.afterimages.compat;
 
-import net.combatroll.CombatRoll;
-import net.combatroll.internals.RollingEntity;
+import net.combat_roll.CombatRollMod;
+import net.combat_roll.internals.RollingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
@@ -36,7 +36,7 @@ public class CombatRollCompat {
             long currentTime = entity.level().getGameTime();
             long elapsed = currentTime - startTime;
 
-            int duration = (CombatRoll.config != null) ? CombatRoll.config.roll_duration : 20;
+            int duration = (CombatRollMod.config != null) ? CombatRollMod.config.roll_duration : 20;
 
             if (elapsed >= 0 && elapsed < duration) {
                 return true;

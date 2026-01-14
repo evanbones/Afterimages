@@ -18,7 +18,7 @@ public class AfterimagesModClient implements ClientModInitializer {
     private static class FabricAfterimageConfigLoader extends AfterimageConfigLoader implements IdentifiableResourceReloadListener {
         @Override
         public ResourceLocation getFabricId() {
-            return new ResourceLocation(Constants.MOD_ID, "entities");
+            return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "entities");
         }
     }
 }

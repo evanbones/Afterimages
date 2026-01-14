@@ -51,6 +51,7 @@ body:
           description: The version of Minecraft you were using
           options:
               - "1.20.1"
+              - "1.21.1"
         validations:
           required: true
     -   type: dropdown
@@ -59,6 +60,7 @@ body:
             description: Which mod loader were you using?
             options:
                 - "Forge"
+                - "NeoForge"
                 - "Fabric"
         validations:
             required: true

@@ -40,16 +40,16 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener {
                 if (obj.has("entity")) {
                     String entityStr = obj.get("entity").getAsString();
                     if (entityStr.startsWith("#")) {
-                        ResourceLocation tagLoc = new ResourceLocation(entityStr.substring(1));
+                        ResourceLocation tagLoc = ResourceLocation.parse(entityStr.substring(1));
                         TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, tagLoc);
                         BuiltInRegistries.ENTITY_TYPE.getTag(tagKey).ifPresent(tag -> {
                             for (Holder<EntityType<?>> holder : tag) entities.add(holder.value());
                         });
                     } else {
-                        entities.add(BuiltInRegistries.ENTITY_TYPE.get(new ResourceLocation(entityStr)));
+                        entities.add(BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(entityStr)));
                     }
                 } else {
-                    ResourceLocation entityId = new ResourceLocation(location.getNamespace(), location.getPath());
+                    ResourceLocation entityId = ResourceLocation.fromNamespaceAndPath(location.getNamespace(), location.getPath());
                     entities.add(BuiltInRegistries.ENTITY_TYPE.get(entityId));
                 }
 

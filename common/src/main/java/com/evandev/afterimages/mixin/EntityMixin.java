@@ -55,7 +55,7 @@ public class EntityMixin implements AfterimageAccessor {
         boolean shouldRecord = false;
 
         if (config.combatRollOnly()) {
-            if (Services.PLATFORM.isModLoaded("combatroll")) {
+            if (Services.PLATFORM.isModLoaded("combat_roll")) {
                 if (CombatRollCompat.isRolling(self)) {
                     shouldRecord = true;
                 }
