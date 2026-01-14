@@ -1,6 +1,5 @@
 package com.evandev.afterimages.mixin;
 
-import com.evandev.afterimages.platform.Services;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -22,7 +21,12 @@ public class AfterimagesMixinPlugin implements IMixinConfigPlugin {
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         if (mixinClassName.equals("com.evandev.afterimages.mixin.combatroll.RollEffectMixin")) {
-            return Services.PLATFORM.isModLoaded("combatroll");
+            try {
+                Class.forName("net.combatroll.CombatRoll", false, this.getClass().getClassLoader());
+                return true;
+            } catch (ClassNotFoundException e) {
+                return false;
+            }
         }
         return true;
     }
