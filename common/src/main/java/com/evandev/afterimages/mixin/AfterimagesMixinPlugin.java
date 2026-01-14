@@ -21,7 +21,7 @@ public class AfterimagesMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        if (mixinClassName.equals("com.evandev.afterimages.mixin.compat.RollEffectMixin")) {
+        if (mixinClassName.equals("com.evandev.afterimages.mixin.combatroll.RollEffectMixin")) {
             return Services.PLATFORM.isModLoaded("combatroll");
         }
         return true;
