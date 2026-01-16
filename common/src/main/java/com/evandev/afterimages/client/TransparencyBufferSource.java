@@ -40,14 +40,14 @@ public class TransparencyBufferSource implements MultiBufferSource {
     public @NotNull VertexConsumer getBuffer(@NotNull RenderType type) {
         if (this.overlayOnly) {
             if (type.toString().contains("eyes")) {
-                return new AlphaVertexConsumer(delegate.getBuffer(type), alpha, rgb, true);
+                return new AlphaVertexConsumer(delegate.getBuffer(type), alpha, rgb, true, true);
             } else {
                 return new NoOpVertexConsumer();
             }
         }
 
         RenderType remappedType = GhostRenderType.get(this.texture);
-        return new AlphaVertexConsumer(delegate.getBuffer(remappedType), alpha, rgb, false);
+        return new AlphaVertexConsumer(delegate.getBuffer(remappedType), alpha, rgb, false, false);
     }
 
     private static class GhostRenderType extends RenderType {
@@ -84,12 +84,18 @@ public class TransparencyBufferSource implements MultiBufferSource {
         }
     }
 
-    private record AlphaVertexConsumer(VertexConsumer delegate, float alpha, int rgb, boolean premultiplyAlpha) implements VertexConsumer {
+    private record AlphaVertexConsumer(VertexConsumer delegate, float alpha, int rgb, boolean premultiplyAlpha, boolean applyBias) implements VertexConsumer {
         @Override
         public @NotNull VertexConsumer vertex(double x, double y, double z) {
-            delegate.vertex(x, y, z);
+            if (applyBias) {
+                double bias = 0.995; // Scale down distance by 0.5%
+                delegate.vertex(x * bias, y * bias, z * bias);
+            } else {
+                delegate.vertex(x, y, z);
+            }
             return this;
         }
+
         @Override
         public @NotNull VertexConsumer color(int red, int green, int blue, int alpha) {
             float rScale = ((rgb >> 16) & 0xFF) / 255.0f;
