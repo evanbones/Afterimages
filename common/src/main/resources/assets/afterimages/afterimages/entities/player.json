@@ -2,7 +2,7 @@
   "entity": "minecraft:player",
   "speed_threshold": 0.1,
   "duration": 5,
-  "color": "#FF0000",
-  "combat_roll_only": false,
-  "elenai_dodge_only": false
+  "color": "#FFFFFF",
+  "combat_roll_only": true,
+  "elenai_dodge_only": true
 }
