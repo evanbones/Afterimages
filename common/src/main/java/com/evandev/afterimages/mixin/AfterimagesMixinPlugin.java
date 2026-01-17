@@ -23,10 +23,6 @@ public class AfterimagesMixinPlugin implements IMixinConfigPlugin {
         return switch (mixinClassName) {
             case "com.evandev.afterimages.mixin.combatroll.RollEffectMixin" ->
                     isClassAvailable("net.combatroll.CombatRoll");
-            case "com.evandev.afterimages.mixin.elenaidodge.DodgeHandlerMixin" ->
-                    isClassAvailable("com.elenai.elenaidodge2.ElenaiDodge2");
-            case "com.evandev.afterimages.mixin.azurelibarmor.GeoArmorRendererMixin" ->
-                    isClassAvailable("mod.azure.azurelibarmor.renderer.GeoArmorRenderer");
             default -> true;
         };
     }

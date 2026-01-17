@@ -13,8 +13,7 @@
     "EntityRenderDispatcherMixin",
     "LevelRendererMixin",
     "access.CompositeStateAccessor",
-    "access.RenderTypeAccessor",
-    "azurelibarmor.GeoArmorRendererMixin"
+    "access.RenderTypeAccessor"
   ],
   "server": [
   ],
