@@ -77,10 +77,11 @@ public class TransparencyBufferSource implements MultiBufferSource {
                     .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
                     .setTextureState(textureState)
                     .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-                    .setCullState(NO_CULL)
+                    .setCullState(CULL)
                     .setLightmapState(LIGHTMAP)
                     .setOverlayState(OVERLAY)
                     .setWriteMaskState(COLOR_WRITE)
+                    .setDepthTestState(LEQUAL_DEPTH_TEST)
                     .createCompositeState(false);
 
             return RenderType.create(

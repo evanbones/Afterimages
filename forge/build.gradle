@@ -91,6 +91,7 @@ publishMods {
 
         optional { slug = "cloth-config" }
         optional { slug = "combat-roll"}
+        optional { slug = "elenai-dodge-2"}
     }
 
     modrinth {
@@ -100,5 +101,6 @@ publishMods {
 
         optional { slug = "cloth-config" }
         optional { slug = "combat-roll"}
+        optional { slug = "elenai-dodge-2"}
     }
 }

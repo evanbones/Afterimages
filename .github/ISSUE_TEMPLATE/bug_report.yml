@@ -44,6 +44,7 @@ body:
             options:
                 - "1.0.0"
                 - "1.1.0"
+                - "1.1.1"
         validations:
             required: true
     -   type: dropdown
