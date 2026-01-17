@@ -72,7 +72,9 @@ To add an afterimage to an entity, create a JSON file in your resource pack at:
 
 Afterimages has native support for the **[Combat Roll](https://modrinth.com/mod/combat-roll)** mod.
 
-* **Usage:** Set `"combat_roll_only": true` in your player configuration file to make trails appear exclusively during a roll dodge.
+Afterimages also supports **[Elenai Dodge 2](https://modrinth.com/mod/elenai-dodge-2)** on Forge.
+
+* **Usage:** Set `"combat_roll_only": true` or `"elenai_dodge_only": true` in your player configuration file to make trails appear exclusively during a roll dodge.
 
 ---
 

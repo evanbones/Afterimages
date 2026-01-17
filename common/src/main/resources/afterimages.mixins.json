@@ -10,7 +10,10 @@
     "combatroll.RollEffectMixin"
   ],
   "client": [
-    "EntityRenderDispatcherMixin"
+    "EntityRenderDispatcherMixin",
+    "access.CompositeStateAccessor",
+    "access.RenderTypeAccessor",
+    "azurelibarmor.GeoArmorRendererMixin"
   ],
   "server": [
   ],

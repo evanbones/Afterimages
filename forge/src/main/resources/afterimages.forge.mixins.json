@@ -4,7 +4,9 @@
   "package": "com.evandev.afterimages.mixin",
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_17",
-  "mixins": [],
+  "mixins": [
+    "elenaidodge.DodgeHandlerMixin"
+  ],
   "client": [],
   "server": [],
   "injectors": {
