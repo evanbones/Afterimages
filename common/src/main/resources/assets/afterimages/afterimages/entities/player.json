@@ -3,6 +3,6 @@
   "speed_threshold": 0.1,
   "duration": 5,
   "color": "#FFFFFF",
-  "combat_roll_only": false,
-  "elenai_dodge_only": false
+  "combat_roll_only": true,
+  "elenai_dodge_only": true
 }

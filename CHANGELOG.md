@@ -1,2 +1,1 @@
-* Fixed translucency sorting on afterimages.
-* Visual tweaks.
+* Fixed default player.json.
