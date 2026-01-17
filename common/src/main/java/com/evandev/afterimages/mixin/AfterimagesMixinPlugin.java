@@ -20,15 +20,20 @@ public class AfterimagesMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        if (mixinClassName.equals("com.evandev.afterimages.mixin.combatroll.RollEffectMixin")) {
-            try {
-                Class.forName("net.combat_roll.CombatRollMod", false, this.getClass().getClassLoader());
-                return true;
-            } catch (ClassNotFoundException e) {
-                return false;
-            }
-        }
-        return true;
+        return switch (mixinClassName) {
+            case "com.evandev.afterimages.mixin.combatroll.RollEffectMixin" ->
+                    isClassAvailable("net.combatroll.CombatRoll");
+            case "com.evandev.afterimages.mixin.elenaidodge.DodgeHandlerMixin" ->
+                    isClassAvailable("com.elenai.elenaidodge2.ElenaiDodge2");
+            case "com.evandev.afterimages.mixin.azurelibarmor.GeoArmorRendererMixin" ->
+                    isClassAvailable("mod.azure.azurelibarmor.renderer.GeoArmorRenderer");
+            default -> true;
+        };
+    }
+
+    private boolean isClassAvailable(String className) {
+        String path = className.replace('.', '/') + ".class";
+        return this.getClass().getClassLoader().getResource(path) != null;
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.evandev.afterimages.mixin;
 import com.evandev.afterimages.access.AfterimageAccessor;
 import com.evandev.afterimages.data.AfterimageConfigLoader;
 import com.evandev.afterimages.compat.CombatRollCompat;
+import com.evandev.afterimages.compat.ElenaiDodgeCompat;
 import com.evandev.afterimages.platform.Services;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -53,10 +54,16 @@ public class EntityMixin implements AfterimageAccessor {
         }
 
         boolean shouldRecord = false;
+        boolean isRestricted = config.combatRollOnly() || config.elenaiDodgeOnly();
 
-        if (config.combatRollOnly()) {
-            if (Services.PLATFORM.isModLoaded("combat_roll")) {
+        if (isRestricted) {
+            if (config.combatRollOnly() && Services.PLATFORM.isModLoaded("combatroll")) {
                 if (CombatRollCompat.isRolling(self)) {
+                    shouldRecord = true;
+                }
+            }
+            if (!shouldRecord && config.elenaiDodgeOnly() && Services.PLATFORM.isModLoaded("elenaidodge2")) {
+                if (ElenaiDodgeCompat.isDodging(self)) {
                     shouldRecord = true;
                 }
             }
