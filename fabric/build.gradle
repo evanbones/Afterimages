@@ -14,6 +14,9 @@ dependencies {
     // EMI
     modRuntimeOnly "dev.emi:emi-fabric:${emi_version}"
 
+    // EMF
+    modCompileOnly "maven.modrinth:entity-model-features:${emf_version}-fabric-1.21"
+
     // Combat Roll
     modCompileOnly "maven.modrinth:combat-roll:${combat_roll_version}-fabric"
     modCompileOnly "maven.modrinth:playeranimator:${player_animator_version}-fabric"
@@ -61,6 +64,8 @@ publishMods {
         accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
         projectId = "1429618"
         minecraftVersions.add("1.21.1")
+        clientRequired = true
+        serverRequired = false
 
         optional { slug = "cloth-config" }
         optional { slug = "combat-roll"}

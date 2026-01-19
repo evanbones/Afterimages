@@ -20,6 +20,9 @@ dependencies {
     compileOnly "maven.modrinth:combat-roll:${combat_roll_version}-neoforge"
     compileOnly "maven.modrinth:playeranimator:${player_animator_version}-forge"
 
+    // EMF
+    compileOnly "maven.modrinth:entity-model-features:${emf_version}-neoforge-1.21"
+
     // EMI
     compileOnly "dev.emi:emi-xplat-mojmap:${emi_version}"
 

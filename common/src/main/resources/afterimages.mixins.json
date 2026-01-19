@@ -13,7 +13,8 @@
     "EntityRenderDispatcherMixin",
     "LevelRendererMixin",
     "access.CompositeStateAccessor",
-    "access.RenderTypeAccessor"
+    "access.RenderTypeAccessor",
+    "emf.EMFModelPartMixin"
   ],
   "server": [
   ],

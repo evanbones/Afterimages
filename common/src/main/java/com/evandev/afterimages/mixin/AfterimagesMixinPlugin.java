@@ -23,6 +23,8 @@ public class AfterimagesMixinPlugin implements IMixinConfigPlugin {
         return switch (mixinClassName) {
             case "com.evandev.afterimages.mixin.combatroll.RollEffectMixin" ->
                     isClassAvailable("net.combatroll.CombatRoll");
+            case "com.evandev.afterimages.mixin.emf.EMFModelPartMixin" ->
+                    isClassAvailable("traben.entity_model_features.models.parts.EMFModelPart");
             default -> true;
         };
     }

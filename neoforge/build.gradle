@@ -40,6 +40,9 @@ dependencies {
     compileOnly "maven.modrinth:combat-roll:${combat_roll_version}-neoforge"
     compileOnly "maven.modrinth:playeranimator:${player_animator_version}-forge"
 
+    // EMF
+    compileOnly "maven.modrinth:entity-model-features:${emf_version}-neoforge-1.21"
+
     // EMI
     implementation "dev.emi:emi-neoforge:${emi_version}"
 
@@ -58,6 +61,8 @@ publishMods {
         accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
         projectId = "1429618"
         minecraftVersions.add("1.21.1")
+        clientRequired = true
+        serverRequired = false
 
         optional { slug = "cloth-config" }
         optional { slug = "combat-roll"}
