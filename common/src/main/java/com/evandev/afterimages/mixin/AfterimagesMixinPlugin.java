@@ -27,6 +27,8 @@ public class AfterimagesMixinPlugin implements IMixinConfigPlugin {
                     isClassAvailable("com.elenai.elenaidodge2.ElenaiDodge2");
             case "com.evandev.afterimages.mixin.azurelibarmor.GeoArmorRendererMixin" ->
                     isClassAvailable("mod.azure.azurelibarmor.renderer.GeoArmorRenderer");
+            case "com.evandev.afterimages.mixin.emf.EMFModelPartMixin" ->
+                    isClassAvailable("traben.entity_model_features.models.parts.EMFModelPart");
             default -> true;
         };
     }

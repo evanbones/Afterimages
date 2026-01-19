@@ -95,6 +95,9 @@ publishMods {
         optional { slug = "cloth-config" }
         optional { slug = "combat-roll"}
         optional { slug = "elenai-dodge-2"}
+
+        clientRequired = true
+        serverRequired = false
     }
 
     modrinth {
