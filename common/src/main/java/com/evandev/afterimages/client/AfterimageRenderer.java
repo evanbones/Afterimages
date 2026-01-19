@@ -39,6 +39,10 @@ public class AfterimageRenderer {
     }
 
     private static void renderSingleEntity(Entity entity, PoseStack poseStack, float partialTicks, MultiBufferSource buffer, EntityRenderDispatcher dispatcher) {
+        if (entity == Minecraft.getInstance().player && Minecraft.getInstance().options.getCameraType().isFirstPerson()) {
+            return;
+        }
+
         if (!(entity instanceof AfterimageAccessor accessor)) return;
         var history = accessor.afterimages$getHistory();
         if (history.isEmpty()) return;
@@ -136,7 +140,6 @@ public class AfterimageRenderer {
                 float interpYHead = Mth.rotLerp(progress, before.yHeadRot(), after.yHeadRot());
 
                 poseStack.pushPose();
-                poseStack.translate(interpX - cameraPos.x, interpY - cameraPos.y, interpZ - cameraPos.z);
 
                 float oldYRot = entity.getYRot();
                 float oldXRot = entity.getXRot();
@@ -154,7 +157,17 @@ public class AfterimageRenderer {
 
                 try {
                     int packedLight = dispatcher.getPackedLightCoords(entity, partialTicks);
-                    dispatcher.getRenderer(entity).render(entity, interpYRot, 1.0f, poseStack, transparencyBuffer, packedLight);
+                    dispatcher.render(
+                            entity,
+                            interpX - cameraPos.x,
+                            interpY - cameraPos.y,
+                            interpZ - cameraPos.z,
+                            interpYRot,
+                            1.0f,
+                            poseStack,
+                            transparencyBuffer,
+                            packedLight
+                    );
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

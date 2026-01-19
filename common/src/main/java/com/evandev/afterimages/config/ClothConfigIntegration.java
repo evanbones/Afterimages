@@ -21,7 +21,7 @@ public class ClothConfigIntegration {
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
         general.addEntry(entryBuilder.startDoubleField(Component.translatable("option.afterimages.step_size"), config.step_size)
-                .setDefaultValue(0.25)
+                .setDefaultValue(0.5)
                 .setMin(0.05)
                 .setMax(2.0)
                 .setTooltip(Component.translatable("tooltip.afterimages.step_size"))

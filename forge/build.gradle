@@ -57,6 +57,9 @@ dependencies {
     modCompileOnly "maven.modrinth:elenai-dodge-2:${elenai_dodge_version}"
     modCompileOnly "maven.modrinth:feathers:${feathers_version}"
 
+    // EMF
+    modCompileOnly "maven.modrinth:entity-model-features:${emf_version}-forge-1.20.1"
+
     // EMI
     modRuntimeOnly "dev.emi:emi-forge:${emi_version}"
 

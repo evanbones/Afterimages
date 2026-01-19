@@ -14,8 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TransparencyBufferSource implements MultiBufferSource {
-    private final MultiBufferSource delegate;
     public static TransparencyBufferSource CURRENT_INSTANCE = null;
+    private final MultiBufferSource delegate;
     private float alpha = 1.0f;
     private int rgb = 0xFFFFFF;
     private boolean overlayOnly = false;
@@ -38,6 +38,11 @@ public class TransparencyBufferSource implements MultiBufferSource {
 
     @Override
     public @NotNull VertexConsumer getBuffer(@NotNull RenderType type) {
+        if (type.toString().contains("shadow") ||
+                !type.format().getElements().contains(DefaultVertexFormat.ELEMENT_NORMAL)) {
+            return new NoOpVertexConsumer();
+        }
+
         if (this.overlayOnly) {
             if (type.toString().contains("eyes")) {
                 return new AlphaVertexConsumer(delegate.getBuffer(type), alpha, rgb, true, true);

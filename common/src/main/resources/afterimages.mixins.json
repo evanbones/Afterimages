@@ -14,7 +14,8 @@
     "LevelRendererMixin",
     "access.CompositeStateAccessor",
     "access.RenderTypeAccessor",
-    "azurelibarmor.GeoArmorRendererMixin"
+    "azurelibarmor.GeoArmorRendererMixin",
+    "emf.EMFModelPartMixin"
   ],
   "server": [
   ],

@@ -16,7 +16,7 @@ public class ModConfig {
 
     private static ModConfig INSTANCE;
 
-    public double step_size = 0.25;
+    public double step_size = 0.5;
 
     public static ModConfig get() {
         if (INSTANCE == null) {

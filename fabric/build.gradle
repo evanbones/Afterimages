@@ -13,6 +13,9 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 
+    // EMF
+    modCompileOnly "maven.modrinth:entity-model-features:${emf_version}-fabric-1.20.1"
+
     // EMI
     modRuntimeOnly "dev.emi:emi-fabric:${emi_version}"
 
