@@ -125,6 +125,7 @@ public class AfterimageRenderer {
                 float alpha = (float) (config.startAlpha() * (1.0f - ageProgress));
 
                 alpha *= (float) (stepSize / 0.25);
+                alpha = Math.min(1.0f, Math.max(0.0f, alpha));
 
                 if (alpha <= 0.01f) continue;
 
@@ -162,7 +163,6 @@ public class AfterimageRenderer {
                             interpX - cameraPos.x,
                             interpY - cameraPos.y,
                             interpZ - cameraPos.z,
-                            interpYRot,
                             1.0f,
                             poseStack,
                             transparencyBuffer,

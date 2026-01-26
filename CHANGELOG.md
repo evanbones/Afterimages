@@ -1,1 +1,1 @@
-* Fixed afterimages not working with TNT.
+* Port to 1.21.8.
