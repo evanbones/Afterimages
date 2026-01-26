@@ -1,14 +1,18 @@
 package com.evandev.afterimages.mixin.access;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(RenderType.class)
 public interface RenderTypeAccessor {
     @Invoker("create")
-    static RenderType.CompositeRenderType afterimages$create(String name, int bufferSize, boolean affectsCrumbling, boolean sortOnUpload, RenderPipeline renderPipeline, RenderType.CompositeState state) {
+    static RenderType afterimages$create(String name, RenderSetup setup) {
         throw new AssertionError();
     }
+
+    @Accessor("state")
+    RenderSetup afterimages$getSetup();
 }

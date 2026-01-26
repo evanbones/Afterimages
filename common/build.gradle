@@ -21,7 +21,7 @@ dependencies {
     compileOnly "maven.modrinth:player-animation-library:${player_animation_lib_version_neoforge}"
 
     // EMF
-    compileOnly "maven.modrinth:entity-model-features:${emf_version}-neoforge-1.21.6"
+    compileOnly "maven.modrinth:entity-model-features:${emf_version}-neoforge-1.21.11"
 
     // Cloth Config
     compileOnly "me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}"
@@ -46,4 +46,23 @@ configurations {
 artifacts {
     commonJava sourceSets.main.java.sourceDirectories.singleFile
     commonResources sourceSets.main.resources.sourceDirectories.singleFile
+}
+
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
+    configurations.named("$variant") {
+        attributes {
+            attribute(loaderAttribute, 'common')
+        }
+    }
+}
+
+sourceSets.configureEach {
+    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName].each { variant->
+        configurations.named("$variant") {
+            attributes {
+                attribute(loaderAttribute, 'common')
+            }
+        }
+    }
 }

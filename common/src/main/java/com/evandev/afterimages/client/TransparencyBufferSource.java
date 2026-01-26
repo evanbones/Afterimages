@@ -1,15 +1,19 @@
 package com.evandev.afterimages.client;
 
-import com.evandev.afterimages.mixin.access.*;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.evandev.afterimages.Constants;
+import com.evandev.afterimages.mixin.access.RenderSetupAccessor;
+import com.evandev.afterimages.mixin.access.RenderTypeAccessor;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.LayeringTransform;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +43,8 @@ public class TransparencyBufferSource implements MultiBufferSource {
     @Override
     public @NotNull VertexConsumer getBuffer(@NotNull RenderType type) {
         if (type.toString().contains("shadow") ||
-                !type.format().getElements().contains(VertexFormatElement.NORMAL)) {
+                type.toString().contains("glint") ||
+                !hasNormal(type)) {
             return new NoOpVertexConsumer();
         }
 
@@ -55,60 +60,77 @@ public class TransparencyBufferSource implements MultiBufferSource {
         return new AlphaVertexConsumer(delegate.getBuffer(remappedType), alpha, rgb, false);
     }
 
+    private boolean hasNormal(RenderType type) {
+        return type.format().getElements().stream()
+                .anyMatch(e -> e.equals(VertexFormatElement.NORMAL));
+    }
+
     private static class GhostRenderType {
         private static final Map<RenderType, RenderType> CACHE = new HashMap<>();
-        private static RenderPipeline TRANSLUCENT_PIPELINE;
 
         public static RenderType get(RenderType original) {
             return CACHE.computeIfAbsent(original, GhostRenderType::createGhostType);
         }
 
-        private static RenderPipeline getTranslucentPipeline() {
-            if (TRANSLUCENT_PIPELINE == null) {
-                RenderType dummy = RenderType.entityTranslucent(ResourceLocation.parse("minecraft:dummy"));
-                if (dummy instanceof CompositeRenderTypeAccessor accessor) {
-                    TRANSLUCENT_PIPELINE = accessor.afterimages$getPipeline();
-                } else {
-                    throw new RuntimeException("Could not obtain Translucent RenderPipeline via Accessor");
-                }
-            }
-            return TRANSLUCENT_PIPELINE;
-        }
-
         private static RenderType createGhostType(RenderType original) {
-            RenderStateShard.EmptyTextureStateShard textureState = RenderStateShardAccessor.afterimages$getNoTexture();
-
-            if (original instanceof CompositeRenderTypeAccessor accessor) {
-                RenderType.CompositeState state = accessor.afterimages$getState();
-                if (state != null) {
-                    CompositeStateAccessor stateAccess = (CompositeStateAccessor) (Object) state;
-                    textureState = stateAccess.afterimages$getTextureState();
-                }
+            if (!(original instanceof RenderTypeAccessor accessor)) {
+                return original;
             }
 
-            var builder = RenderType.CompositeState.builder();
-            CompositeStateBuilderAccessor builderAccess = (CompositeStateBuilderAccessor) builder;
+            try {
+                RenderSetup setup = accessor.afterimages$getSetup();
+                if (setup == null) return original;
 
-            builderAccess.afterimages$setTextureState(textureState);
+                Identifier texture = extractTexture(setup);
 
-            RenderStateShardHelper.setLightmapState(builder, RenderStateShardHelper.LIGHTMAP);
-            RenderStateShardHelper.setOverlayState(builder, RenderStateShardHelper.OVERLAY);
+                if (texture != null) {
+                    RenderType template = RenderTypes.entityTranslucent(texture);
 
-            RenderType.CompositeState state = builderAccess.afterimages$createCompositeState(false);
+                    RenderSetup newSetup = RenderSetup.builder(template.pipeline())
+                            .withTexture("Sampler0", texture)
+                            .useLightmap()
+                            .useOverlay()
+                            .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+                            .createRenderSetup();
 
-            return RenderTypeAccessor.afterimages$create(
-                    "afterimage_ghost_" + original.toString(),
-                    1536,
-                    false,
-                    true,
-                    getTranslucentPipeline(),
-                    state
-            );
+                    return RenderTypeAccessor.afterimages$create(
+                            "afterimage_ghost_" + texture.getPath(),
+                            newSetup
+                    );
+                }
+
+            } catch (Exception e) {
+                Constants.LOG.error("Failed to create Ghost RenderType for {}", original, e);
+            }
+
+            return original;
         }
+
+        private static Identifier extractTexture(RenderSetup setup) {
+            try {
+                Map<String, ?> textures = ((RenderSetupAccessor) (Object) setup).afterimages$getTextures();
+
+                if (textures == null || textures.isEmpty()) return null;
+
+                Object binding = textures.values().iterator().next();
+
+                for (Field f : binding.getClass().getDeclaredFields()) {
+                    f.setAccessible(true);
+                    if (f.getType().equals(Identifier.class)) {
+                        return (Identifier) f.get(binding);
+                    }
+                }
+            } catch (Exception e) {
+                // Ignore reflection errors to avoid spam
+            }
+            return null;
+        }
+
     }
 
-    private record AlphaVertexConsumer(VertexConsumer delegate, float alpha, int rgb,
+    private record AlphaVertexConsumer(VertexConsumer delegate, float alphaMultiplier, int rgb,
                                        boolean premultiplyAlpha) implements VertexConsumer {
+
         @Override
         public @NotNull VertexConsumer addVertex(float x, float y, float z) {
             delegate.addVertex(x, y, z);
@@ -121,7 +143,7 @@ public class TransparencyBufferSource implements MultiBufferSource {
             float gScale = ((rgb >> 8) & 0xFF) / 255.0f;
             float bScale = (rgb & 0xFF) / 255.0f;
 
-            float alphaFactor = this.alpha;
+            float alphaFactor = this.alphaMultiplier;
 
             if (premultiplyAlpha) {
                 rScale *= alphaFactor;
@@ -136,6 +158,15 @@ public class TransparencyBufferSource implements MultiBufferSource {
                     (int) (alpha * alphaFactor)
             );
             return this;
+        }
+
+        @Override
+        public @NotNull VertexConsumer setColor(int packedColor) {
+            int alpha = (packedColor >> 24) & 0xFF;
+            int red = (packedColor >> 16) & 0xFF;
+            int green = (packedColor >> 8) & 0xFF;
+            int blue = packedColor & 0xFF;
+            return setColor(red, green, blue, alpha);
         }
 
         @Override
@@ -161,6 +192,12 @@ public class TransparencyBufferSource implements MultiBufferSource {
             delegate.setNormal(x, y, z);
             return this;
         }
+
+        @Override
+        public @NotNull VertexConsumer setLineWidth(float width) {
+            delegate.setLineWidth(width);
+            return this;
+        }
     }
 
     private static class NoOpVertexConsumer implements VertexConsumer {
@@ -171,6 +208,11 @@ public class TransparencyBufferSource implements MultiBufferSource {
 
         @Override
         public @NotNull VertexConsumer setColor(int red, int green, int blue, int alpha) {
+            return this;
+        }
+
+        @Override
+        public @NotNull VertexConsumer setColor(int packedColor) {
             return this;
         }
 
@@ -191,6 +233,11 @@ public class TransparencyBufferSource implements MultiBufferSource {
 
         @Override
         public @NotNull VertexConsumer setNormal(float x, float y, float z) {
+            return this;
+        }
+
+        @Override
+        public @NotNull VertexConsumer setLineWidth(float width) {
             return this;
         }
     }

@@ -7,7 +7,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.tags.TagKey;
@@ -29,7 +29,7 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener<Aft
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, AfterimageConfig> resources, @NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
+    protected void apply(Map<Identifier, AfterimageConfig> resources, @NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
         CONFIGS.clear();
 
         resources.forEach((location, config) -> {
@@ -39,7 +39,7 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener<Aft
                 String entityStr = config.entityId();
                 if (entityStr != null && !entityStr.isEmpty()) {
                     if (entityStr.startsWith("#")) {
-                        ResourceLocation tagLoc = ResourceLocation.parse(entityStr.substring(1));
+                        Identifier tagLoc = Identifier.parse(entityStr.substring(1));
                         TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, tagLoc);
 
                         BuiltInRegistries.ENTITY_TYPE.get(tagKey).ifPresent(tag -> {
@@ -48,11 +48,11 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener<Aft
                             }
                         });
                     } else {
-                        BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(entityStr))
+                        BuiltInRegistries.ENTITY_TYPE.get(Identifier.parse(entityStr))
                                 .ifPresent(holder -> entities.add(holder.value()));
                     }
                 } else {
-                    ResourceLocation entityId = ResourceLocation.fromNamespaceAndPath(location.getNamespace(), location.getPath());
+                    Identifier entityId = Identifier.fromNamespaceAndPath(location.getNamespace(), location.getPath());
                     BuiltInRegistries.ENTITY_TYPE.get(entityId)
                             .ifPresent(holder -> entities.add(holder.value()));
                 }

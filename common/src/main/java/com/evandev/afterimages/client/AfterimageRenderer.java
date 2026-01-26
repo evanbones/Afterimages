@@ -5,12 +5,34 @@ import com.evandev.afterimages.config.ModConfig;
 import com.evandev.afterimages.data.AfterimageConfigLoader;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.model.Model;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.MovingBlockRenderState;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.LevelRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,20 +47,21 @@ public class AfterimageRenderer {
         }
     }
 
-    public static void renderAfterimages(PoseStack poseStack, float partialTicks, MultiBufferSource.BufferSource bufferSource) {
+    public static void renderAfterimages(PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, LevelRenderState levelRenderState) {
         isRendering = true;
         EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
 
+        float partialTicks = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
+
         for (Entity entity : RENDER_QUEUE) {
-            renderSingleEntity(entity, poseStack, partialTicks, bufferSource, dispatcher);
+            renderSingleEntity(entity, poseStack, partialTicks, bufferSource, dispatcher, levelRenderState);
         }
 
-        bufferSource.endBatch();
         RENDER_QUEUE.clear();
         isRendering = false;
     }
 
-    private static void renderSingleEntity(Entity entity, PoseStack poseStack, float partialTicks, MultiBufferSource buffer, EntityRenderDispatcher dispatcher) {
+    private static void renderSingleEntity(Entity entity, PoseStack poseStack, float partialTicks, MultiBufferSource buffer, EntityRenderDispatcher dispatcher, LevelRenderState levelRenderState) {
         if (entity == Minecraft.getInstance().player && Minecraft.getInstance().options.getCameraType().isFirstPerson()) {
             return;
         }
@@ -55,7 +78,84 @@ public class AfterimageRenderer {
         transparencyBuffer.setColor(config.color());
         transparencyBuffer.setOverlayOnly(config.overlayOnly());
 
-        Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+        SubmitNodeCollector collector = new SubmitNodeCollector() {
+            @Override
+            public @NonNull OrderedSubmitNodeCollector order(int i) {
+                return this;
+            }
+
+            @Override
+            public void submitCustomGeometry(PoseStack poseStack, @NonNull RenderType renderType, CustomGeometryRenderer renderer) {
+                renderer.render(poseStack.last(), transparencyBuffer.getBuffer(renderType));
+            }
+
+            @Override
+            public <S> void submitModel(Model<? super S> model, S state, @NonNull PoseStack poseStack, @NonNull RenderType
+                    renderType, int light, int overlay, int color, @Nullable TextureAtlasSprite sprite, int skip, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+                model.renderToBuffer(poseStack, transparencyBuffer.getBuffer(renderType), light, overlay, color);
+            }
+
+            @Override
+            public void submitModelPart(ModelPart modelPart, @NonNull PoseStack poseStack, @NonNull RenderType
+                    renderType, int light, int overlay, @Nullable TextureAtlasSprite sprite, boolean mirror, boolean flip, int color, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, int skip) {
+                modelPart.render(poseStack, transparencyBuffer.getBuffer(renderType), light, overlay, color);
+            }
+
+            @Override
+            public void submitItem(PoseStack poseStack, @NonNull ItemDisplayContext displayContext, int light, int overlay, int index, int @NonNull [] data, List<BakedQuad> quads, @NonNull RenderType renderType, ItemStackRenderState.@NonNull FoilType foilType) {
+                var vertexConsumer = transparencyBuffer.getBuffer(renderType);
+                PoseStack.Pose last = poseStack.last();
+                for (BakedQuad quad : quads) {
+                    vertexConsumer.putBulkData(
+                            last,
+                            quad,
+                            (float) (config.color() >> 16 & 0xFF) / 255f,
+                            (float) (config.color() >> 8 & 0xFF) / 255f,
+                            (float) (config.color() & 0xFF) / 255f,
+                            1.0f,
+                            light,
+                            overlay
+                    );
+                }
+            }
+
+            @Override
+            public void submitParticleGroup(@NonNull ParticleGroupRenderer renderer) {
+            }
+
+            @Override
+            public void submitShadow(@NonNull PoseStack poseStack, float radius, @NonNull List<EntityRenderState.ShadowPiece> shadows) {
+            }
+
+            @Override
+            public void submitNameTag(@NonNull PoseStack poseStack, @Nullable Vec3 vec3, int i, @NonNull Component component, boolean b, int i1, double v, @NonNull CameraRenderState cameraRenderState) {
+            }
+
+            @Override
+            public void submitText(@NonNull PoseStack poseStack, float v, float v1, @NonNull FormattedCharSequence formattedCharSequence, boolean b, Font.@NonNull DisplayMode displayMode, int i, int i1, int i2, int i3) {
+            }
+
+            @Override
+            public void submitFlame(@NonNull PoseStack poseStack, @NonNull EntityRenderState entityRenderState, @NonNull Quaternionf quaternionf) {
+            }
+
+            @Override
+            public void submitLeash(@NonNull PoseStack poseStack, EntityRenderState.@NonNull LeashState leashState) {
+            }
+
+            @Override
+            public void submitBlock(@NonNull PoseStack poseStack, @NonNull BlockState blockState, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void submitMovingBlock(@NonNull PoseStack poseStack, @NonNull MovingBlockRenderState movingBlockRenderState) {
+            }
+
+            @Override
+            public void submitBlockModel(@NonNull PoseStack poseStack, @NonNull RenderType renderType, @NonNull BlockStateModel blockStateModel, float v, float v1, float v2, int i, int i1, int i2) {
+            }
+        };
+
         double renderTime = entity.level().getGameTime() + partialTicks;
 
         try {
@@ -95,7 +195,6 @@ public class AfterimageRenderer {
 
             for (double age = stepSize; age < maxAge; age += stepSize) {
                 double targetTime = renderTime - age;
-
                 AfterimageAccessor.Snapshot before = null;
                 AfterimageAccessor.Snapshot after = null;
 
@@ -144,39 +243,75 @@ public class AfterimageRenderer {
 
                 float oldYRot = entity.getYRot();
                 float oldXRot = entity.getXRot();
+                Vec3 oldPos = entity.position();
+                double oldXo = entity.xo;
+                double oldYo = entity.yo;
+                double oldZo = entity.zo;
+                float oldYRotO = entity.yRotO;
+                float oldXRotO = entity.xRotO;
+
                 float oldYBody = 0;
                 float oldYHead = 0;
+                float oldYBodyO = 0;
+                float oldYHeadO = 0;
 
                 if (entity instanceof LivingEntity l) {
                     oldYBody = l.yBodyRot;
                     oldYHead = l.yHeadRot;
+                    oldYBodyO = l.yBodyRotO;
+                    oldYHeadO = l.yHeadRotO;
+
                     l.yBodyRot = interpYBody;
                     l.yHeadRot = interpYHead;
+                    l.yBodyRotO = interpYBody;
+                    l.yHeadRotO = interpYHead;
                 }
+
                 entity.setYRot(interpYRot);
                 entity.setXRot(interpXRot);
+                entity.setPos(interpX, interpY, interpZ);
+
+                entity.xo = interpX;
+                entity.yo = interpY;
+                entity.zo = interpZ;
+                entity.yRotO = interpYRot;
+                entity.xRotO = interpXRot;
 
                 try {
-                    int packedLight = dispatcher.getPackedLightCoords(entity, partialTicks);
-                    dispatcher.render(
-                            entity,
-                            interpX - cameraPos.x,
-                            interpY - cameraPos.y,
-                            interpZ - cameraPos.z,
-                            1.0f,
+                    EntityRenderState renderState = dispatcher.extractEntity(entity, partialTicks);
+
+                    Vec3 camPos = levelRenderState.cameraRenderState.pos;
+                    double relX = interpX - camPos.x;
+                    double relY = interpY - camPos.y;
+                    double relZ = interpZ - camPos.z;
+
+                    dispatcher.submit(
+                            renderState,
+                            levelRenderState.cameraRenderState,
+                            relX,
+                            relY,
+                            relZ,
                             poseStack,
-                            transparencyBuffer,
-                            packedLight
+                            collector
                     );
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
+                entity.setPos(oldPos.x, oldPos.y, oldPos.z);
                 entity.setYRot(oldYRot);
                 entity.setXRot(oldXRot);
+                entity.xo = oldXo;
+                entity.yo = oldYo;
+                entity.zo = oldZo;
+                entity.yRotO = oldYRotO;
+                entity.xRotO = oldXRotO;
+
                 if (entity instanceof LivingEntity l) {
                     l.yBodyRot = oldYBody;
                     l.yHeadRot = oldYHead;
+                    l.yBodyRotO = oldYBodyO;
+                    l.yHeadRotO = oldYHeadO;
                 }
 
                 poseStack.popPose();

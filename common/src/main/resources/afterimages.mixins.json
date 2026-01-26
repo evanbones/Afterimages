@@ -13,10 +13,7 @@
   "client": [
     "EntityRenderDispatcherMixin",
     "LevelRendererMixin",
-    "access.CompositeRenderTypeAccessor",
-    "access.CompositeStateAccessor",
-    "access.CompositeStateBuilderAccessor",
-    "access.RenderStateShardAccessor",
+    "access.RenderSetupAccessor",
     "access.RenderTypeAccessor",
     "emf.EMFModelPartMixin"
   ],

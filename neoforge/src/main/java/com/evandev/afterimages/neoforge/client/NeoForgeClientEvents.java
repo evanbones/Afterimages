@@ -2,7 +2,7 @@ package com.evandev.afterimages.neoforge.client;
 
 import com.evandev.afterimages.Constants;
 import com.evandev.afterimages.data.AfterimageConfigLoader;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -14,7 +14,7 @@ public class NeoForgeClientEvents {
     @SubscribeEvent
     public static void onRegisterReloadListeners(AddClientReloadListenersEvent event) {
         event.addListener(
-                ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "afterimage_config"),
+                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "afterimage_config"),
                 new AfterimageConfigLoader()
         );
     }
