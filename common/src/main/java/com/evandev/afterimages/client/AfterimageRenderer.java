@@ -170,16 +170,15 @@ public class AfterimageRenderer {
                     );
                 } catch (Exception e) {
                     e.printStackTrace();
+                } finally {
+                    entity.setYRot(oldYRot);
+                    entity.setXRot(oldXRot);
+                    if (entity instanceof LivingEntity l) {
+                        l.yBodyRot = oldYBody;
+                        l.yHeadRot = oldYHead;
+                    }
+                    poseStack.popPose();
                 }
-
-                entity.setYRot(oldYRot);
-                entity.setXRot(oldXRot);
-                if (entity instanceof LivingEntity l) {
-                    l.yBodyRot = oldYBody;
-                    l.yHeadRot = oldYHead;
-                }
-
-                poseStack.popPose();
             }
         } finally {
             TransparencyBufferSource.CURRENT_INSTANCE = null;
