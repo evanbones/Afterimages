@@ -68,8 +68,11 @@ public class EntityMixin implements AfterimageAccessor {
                 }
             }
         } else {
-            double speed = self.getDeltaMovement().lengthSqr();
-            if (speed >= config.speedThreshold() * config.speedThreshold()) {
+            var delta = self.getDeltaMovement();
+            double speedSq = config.includeVerticalSpeed()
+                    ? delta.lengthSqr()
+                    : delta.x * delta.x + delta.z * delta.z;
+            if (speedSq >= config.speedThreshold() * config.speedThreshold()) {
                 shouldRecord = true;
             }
         }

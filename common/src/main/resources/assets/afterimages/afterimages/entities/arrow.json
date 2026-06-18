@@ -1,5 +1,6 @@
 {
   "entity": "minecraft:arrow",
   "speed_threshold": 0.5,
-  "duration": 5
+  "duration": 5,
+  "include_vertical_speed": true
 }

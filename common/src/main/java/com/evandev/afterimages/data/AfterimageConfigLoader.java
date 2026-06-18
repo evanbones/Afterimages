@@ -62,8 +62,10 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener {
                     boolean elenaiDodgeOnly = obj.has("elenai_dodge_only") && obj.get("elenai_dodge_only").getAsBoolean();
 
                     double startAlpha = obj.has("start_alpha") ? obj.get("start_alpha").getAsDouble() : 0.5;
+                    double stepSize = obj.has("step_size") ? obj.get("step_size").getAsDouble() : -1.0;
+                    boolean includeVerticalSpeed = obj.has("include_vertical_speed") && obj.get("include_vertical_speed").getAsBoolean();
 
-                    AfterimageConfig config = new AfterimageConfig(speedThreshold, duration, color, overlay, startAlpha, combatRollOnly, elenaiDodgeOnly);
+                    AfterimageConfig config = new AfterimageConfig(speedThreshold, duration, color, overlay, startAlpha, combatRollOnly, elenaiDodgeOnly, stepSize, includeVerticalSpeed);
 
                     for (EntityType<?> type : entities) {
                         CONFIGS.put(type, config);
@@ -79,6 +81,7 @@ public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener {
     }
 
     public record AfterimageConfig(double speedThreshold, int duration, int color, boolean overlayOnly,
-                                   double startAlpha, boolean combatRollOnly, boolean elenaiDodgeOnly) {
+                                   double startAlpha, boolean combatRollOnly, boolean elenaiDodgeOnly,
+                                   double stepSize, boolean includeVerticalSpeed) {
     }
 }

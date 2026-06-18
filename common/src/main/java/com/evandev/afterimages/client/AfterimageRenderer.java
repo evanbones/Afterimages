@@ -90,7 +90,7 @@ public class AfterimageRenderer {
 
             snapshots.addAll(history);
 
-            double stepSize = Math.max(0.05, ModConfig.get().step_size);
+            double stepSize = Math.max(0.05, config.stepSize() >= 0 ? config.stepSize() : ModConfig.get().step_size);
             double maxAge = config.duration();
 
             for (double age = stepSize; age < maxAge; age += stepSize) {
