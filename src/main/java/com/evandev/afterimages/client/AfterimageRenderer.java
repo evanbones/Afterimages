@@ -13,10 +13,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 
 public class AfterimageRenderer {
-    private static final List<Entity> RENDER_QUEUE = new ArrayList<>();
+    private static final Set<Entity> RENDER_QUEUE = Collections.newSetFromMap(new IdentityHashMap<>());
     private static boolean isRendering = false;
 
     public static void addToQueue(Entity entity) {
@@ -98,6 +101,7 @@ public class AfterimageRenderer {
 
                 AfterimageAccessor.Snapshot before = null;
                 AfterimageAccessor.Snapshot after = null;
+                int beforeIndex = -1;
 
                 for (int i = 0; i < snapshots.size() - 1; i++) {
                     AfterimageAccessor.Snapshot s1 = snapshots.get(i);
@@ -108,13 +112,14 @@ public class AfterimageRenderer {
                     if (targetTime <= t1 && targetTime >= t2) {
                         before = s1;
                         after = s2;
+                        beforeIndex = i;
                         break;
                     }
                 }
 
                 if (before == null) continue;
 
-                double t1 = (snapshots.indexOf(before) == 0 && connectedToBody) ? renderTime : before.timestamp();
+                double t1 = (beforeIndex == 0 && connectedToBody) ? renderTime : before.timestamp();
                 double t2 = after.timestamp();
                 double delta = t1 - t2;
 

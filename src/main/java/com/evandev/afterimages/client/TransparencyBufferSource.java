@@ -5,15 +5,17 @@ import com.evandev.afterimages.mixin.access.RenderTypeAccessor;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-//? if >=1.21
-import com.mojang.blaze3d.vertex.VertexFormatElement;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
+
+//? if >=1.21
+import com.mojang.blaze3d.vertex.VertexFormatElement;
 
 public class TransparencyBufferSource implements MultiBufferSource {
     public static TransparencyBufferSource CURRENT_INSTANCE = null;
@@ -40,26 +42,44 @@ public class TransparencyBufferSource implements MultiBufferSource {
 
     @Override
     public @NotNull VertexConsumer getBuffer(@NotNull RenderType type) {
-        //? if >=1.21 {
-        VertexFormatElement normalElement = VertexFormatElement.NORMAL;
-        //?} else
-        //var normalElement = DefaultVertexFormat.ELEMENT_NORMAL;
-        if (type.toString().contains("shadow") ||
-                !type.format().getElements().contains(normalElement)) {
-            return new NoOpVertexConsumer();
+        TypeKind kind = TypeKind.of(type);
+        if (kind == TypeKind.SKIP) {
+            return NoOpVertexConsumer.INSTANCE;
         }
 
         if (this.overlayOnly) {
-            if (type.toString().contains("eyes")) {
+            if (kind == TypeKind.EYES) {
                 return new AlphaVertexConsumer(delegate.getBuffer(type), alpha, rgb, true, true);
             } else {
-                return new NoOpVertexConsumer();
+                return NoOpVertexConsumer.INSTANCE;
             }
         }
 
         RenderType remappedType = GhostRenderType.get(type);
 
         return new AlphaVertexConsumer(delegate.getBuffer(remappedType), alpha, rgb, false, false);
+    }
+
+    private enum TypeKind {
+        SKIP, EYES, NORMAL;
+
+        private static final Map<RenderType, TypeKind> CACHE = new IdentityHashMap<>();
+
+        static TypeKind of(RenderType type) {
+            return CACHE.computeIfAbsent(type, TypeKind::classify);
+        }
+
+        private static TypeKind classify(RenderType type) {
+            //? if >=1.21 {
+            VertexFormatElement normalElement = VertexFormatElement.NORMAL;
+            //?} else
+            //var normalElement = DefaultVertexFormat.ELEMENT_NORMAL;
+            String name = type.toString();
+            if (name.contains("shadow") || !type.format().getElements().contains(normalElement)) {
+                return SKIP;
+            }
+            return name.contains("eyes") ? EYES : NORMAL;
+        }
     }
 
     private static class GhostRenderType extends RenderType {
@@ -261,6 +281,8 @@ public class TransparencyBufferSource implements MultiBufferSource {
     }
 
     private static class NoOpVertexConsumer implements VertexConsumer {
+        static final NoOpVertexConsumer INSTANCE = new NoOpVertexConsumer();
+
         //? if >=1.21 {
         @Override
         public @NotNull VertexConsumer addVertex(float x, float y, float z) {

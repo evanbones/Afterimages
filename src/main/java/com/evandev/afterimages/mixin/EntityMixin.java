@@ -20,7 +20,7 @@ import java.util.Deque;
 @Mixin(Entity.class)
 public class EntityMixin implements AfterimageAccessor {
     @Unique
-    private final Deque<Snapshot> afterimages$afterimageHistory = new ArrayDeque<>();
+    private final Deque<Snapshot> afterimages$afterimageHistory = new ArrayDeque<>(0);
 
     @Override
     public Deque<Snapshot> afterimages$getHistory() {
@@ -35,6 +35,8 @@ public class EntityMixin implements AfterimageAccessor {
     @Override
     public void afterimages$tickHistory() {
         Entity self = (Entity) (Object) this;
+        if (!self.level().isClientSide()) return;
+
         long gameTime = self.level().getGameTime();
 
         var config = AfterimageConfigLoader.CONFIGS.get(self.getType());
