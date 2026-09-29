@@ -1,0 +1,41 @@
+{
+    "schemaVersion": 1,
+    "id": "${mod_id}",
+    "version": "${version}",
+    "name": "${mod_name}",
+    "description": "${description}",
+    "authors": [
+        "${mod_author}"
+    ],
+    "contact": {
+        "homepage": "https://github.com/evanbones/Afterimages",
+        "sources": "https://github.com/evanbones/Afterimages"
+    },
+    "license": "${license}",
+    "icon": "${mod_id}.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "com.evandev.afterimages.AfterimagesFabric"
+        ],
+        "client": [
+            "com.evandev.afterimages.client.AfterimagesFabricClient"
+        ],
+        "modmenu": [
+            "com.evandev.afterimages.compat.ModMenuIntegration"
+        ]
+    },
+    "accessWidener": "${mod_id}.accesswidener",
+    "mixins": [
+        "${mod_id}.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=${fabric_loader_version}",
+        "fabric-api": "*",
+        "minecraft": "${minecraft_version}",
+        "java": ">=${java_version}"
+    },
+    "suggests": {
+        "cloth-config": "*"
+    }
+}

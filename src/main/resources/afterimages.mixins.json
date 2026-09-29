@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.evandev.afterimages.mixin",
+  "plugin": "com.evandev.afterimages.mixin.AfterimagesMixinPlugin",
+  "compatibilityLevel": "JAVA_${java_version}",
+  "mixins": [
+    "EntityMixin",
+    "PrimedTntMixin",
+    "combatroll.RollEffectMixin"
+  ],
+  "client": [
+    "EntityRenderDispatcherMixin",
+    "LevelRendererMixin",
+    "access.CompositeStateAccessor",
+    "access.RenderTypeAccessor",
+    "emf.EMFModelPartMixin"
+  ],
+  "server": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
+
