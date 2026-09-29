@@ -1,7 +1,6 @@
 plugins {
     id 'multiloader-loader'
     id 'fabric-loom'
-    id "me.modmuss50.mod-publish-plugin" version "1.1.0"
 }
 
 dependencies {
@@ -15,6 +14,7 @@ dependencies {
 
     // EMF
     modCompileOnly "maven.modrinth:entity-model-features:${emf_version}-fabric-1.20.1"
+    modCompileOnly "maven.modrinth:entitytexturefeatures:${etf_version}-fabric-1.20.1"
 
     // EMI
     modRuntimeOnly "dev.emi:emi-fabric:${emi_version}"
@@ -35,12 +35,11 @@ dependencies {
 }
 
 loom {
-    if (project(":common").file("src/main/resources/${mod_id}.accesswidener").exists()) {
-        accessWidenerPath.set(project(":common").file("src/main/resources/${mod_id}.accesswidener"))
+    def aw = project(':common').file("src/main/resources/${mod_id}.accesswidener")
+    if (aw.exists()) {
+        accessWidenerPath.set(aw)
     }
-    mixin {
-        defaultRefmapName.set("${mod_id}.refmap.json")
-    }
+
     runs {
         client {
             client()
@@ -59,28 +58,4 @@ loom {
 
 publishMods {
     file = tasks.named("remapJar").flatMap { it.archiveFile }
-    changelog = rootProject.file("CHANGELOG.md").text
-    type = STABLE
-    displayName = "${mod_name} Fabric ${minecraft_version} - ${project.version}"
-    modLoaders.add("fabric")
-
-    curseforge {
-        accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
-        projectId = "1429618"
-        minecraftVersions.add("1.20.1")
-        clientRequired = true
-        serverRequired = false
-
-        optional { slug = "cloth-config" }
-        optional { slug = "combat-roll"}
-    }
-
-    modrinth {
-        accessToken = providers.environmentVariable("MODRINTH_TOKEN")
-        projectId = "W7xRcWxh"
-        minecraftVersions.add("1.20.1")
-
-        optional { slug = "cloth-config" }
-        optional { slug = "combat-roll"}
-    }
 }
