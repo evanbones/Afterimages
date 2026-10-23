@@ -54,6 +54,7 @@ public class AfterimagesMixinPlugin implements IMixinConfigPlugin {
         // AzureLib Armor rewrote its renderer for 1.21, so this mixin only exists on 1.20
         //? if <1.21 {
         /*mixins.add("azurelibarmor.GeoArmorRendererMixin");
+        mixins.add("access.PotionBrewingInvoker");
         *///?}
         // Elenai Dodge 2 is Forge-only
         //? if forge {

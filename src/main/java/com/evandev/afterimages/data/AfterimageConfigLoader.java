@@ -12,8 +12,10 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,10 +24,17 @@ import java.util.Map;
 
 public class AfterimageConfigLoader extends SimpleJsonResourceReloadListener {
     public static final Map<EntityType<?>, AfterimageConfig> CONFIGS = new HashMap<>();
+    public static final AfterimageConfig EFFECT_CONFIG = new AfterimageConfig(0.1, 5, 0xFFFFFF, false, 0.5, false, false, -1.0, false);
     private static final Gson GSON = new Gson();
 
     public AfterimageConfigLoader() {
         super(GSON, "afterimages/entities");
+    }
+
+    @Nullable
+    public static AfterimageConfig getConfig(Entity entity, boolean hasEffect) {
+        AfterimageConfig config = CONFIGS.get(entity.getType());
+        return config == null && hasEffect ? EFFECT_CONFIG : config;
     }
 
     @Override

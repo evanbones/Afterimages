@@ -28,6 +28,12 @@ public class ClothConfigIntegration {
                 .setSaveConsumer(newValue -> config.step_size = newValue)
                 .build());
 
+        general.addEntry(entryBuilder.startColorField(Component.translatable("option.afterimages.effect_color"), config.effect_color)
+                .setDefaultValue(0xFFFFFF)
+                .setTooltip(Component.translatable("tooltip.afterimages.effect_color"))
+                .setSaveConsumer(newValue -> config.effect_color = newValue)
+                .build());
+
         return builder.build();
     }
 }

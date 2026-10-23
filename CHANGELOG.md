@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-10-22
+
+### Added
+
+- Added the Afterimage effect, which gives any entity an afterimage trail while it moves. Requires the mod on the
+  server (the mod still works client-only without it).
+- Added Potions of Afterimage (Awkward Potion + Ender Pearl, extend with Redstone), including splash, lingering and
+  tipped arrow variants.
+
 ## [1.3.0] - 2026-09-28
 
 ### Changed

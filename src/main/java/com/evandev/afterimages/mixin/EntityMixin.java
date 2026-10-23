@@ -5,6 +5,8 @@ import com.evandev.afterimages.data.AfterimageConfigLoader;
 import com.evandev.afterimages.compat.CombatRollCompat;
 import com.evandev.afterimages.compat.ElenaiDodgeCompat;
 import com.evandev.afterimages.Platform;
+import com.evandev.afterimages.effect.AfterimageEffects;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
@@ -32,6 +34,11 @@ public class EntityMixin implements AfterimageAccessor {
         afterimages$tickHistory();
     }
 
+    @Inject(method = "startSeenByPlayer", at = @At("TAIL"))
+    private void afterimages$sendAfterimageEffect(ServerPlayer player, CallbackInfo ci) {
+        AfterimageEffects.sendToPlayer((Entity) (Object) this, player);
+    }
+
     @Override
     public void afterimages$tickHistory() {
         Entity self = (Entity) (Object) this;
@@ -39,7 +46,8 @@ public class EntityMixin implements AfterimageAccessor {
 
         long gameTime = self.level().getGameTime();
 
-        var config = AfterimageConfigLoader.CONFIGS.get(self.getType());
+        boolean fromEffect = AfterimageEffects.hasAfterimage(self);
+        var config = AfterimageConfigLoader.getConfig(self, fromEffect);
 
         if (config == null) {
             if (!afterimages$afterimageHistory.isEmpty()) afterimages$afterimageHistory.clear();
@@ -56,7 +64,7 @@ public class EntityMixin implements AfterimageAccessor {
         }
 
         boolean shouldRecord = false;
-        boolean isRestricted = config.combatRollOnly() || config.elenaiDodgeOnly();
+        boolean isRestricted = !fromEffect && (config.combatRollOnly() || config.elenaiDodgeOnly());
 
         if (isRestricted) {
             if (config.combatRollOnly() && Platform.isModLoaded(CombatRollCompat.MOD_ID)) {

@@ -182,7 +182,7 @@ publishMods {
         projectId = prop("publish.curseforge")
         minecraftVersions.add(minecraft)
         client = true
-        server = false
+        server = true
 
         optional("cloth-config")
         optional("combat-roll")

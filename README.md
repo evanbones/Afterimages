@@ -1,11 +1,26 @@
 # Afterimages
 
-A lightweight, data-driven mod that adds visual afterimage trails to entities. You can configure which entities have afterimages, how they look, and when they appear—entirely through Resource Packs.
+A lightweight, data-driven mod that adds visual afterimage trails to entities. You can configure which entities have afterimages, how they look, and when they appear, entirely through Resource Packs.
 
 ### Features
 
 * **Data-Driven:** Every aspect of the afterimage (duration, color, triggers) is controlled via JSON files.
 * **Mod Compatible:** Built-in support for **Combat Roll** and other mods in the future, upon request.
+
+---
+
+### Afterimage Effect
+
+If Afterimages is also installed on the server, it adds an **Afterimage** effect that gives any entity an afterimage trail while it moves. Use it with `/effect` or brew it:
+
+| Potion | Recipe | Duration |
+| --- | --- | --- |
+| Potion of Afterimage | Awkward Potion + Ender Pearl | 3:00 |
+| Potion of Afterimage (long) | Potion of Afterimage + Redstone | 8:00 |
+
+Splash, lingering and tipped arrow versions work like any other potion. Effect trails use the **Afterimage Effect Color** from the global config.
+
+Without the mod on the server, the potion and effect don't exist and the mod works client-only.
 
 ---
 
@@ -16,6 +31,7 @@ This mod uses **Cloth Config** for global settings. You can access the config me
 | Option | Default | Description |
 | --- | --- | --- |
 | **Step Size** | `0.25` | Controls the density of the afterimage trail. Lower values (e.g. `0.1`) create smoother, connected trails but may impact performance. Higher values create distinct "snapshots". |
+| **Afterimage Effect Color** | `#FFFFFF` | Trail color for entities with the Afterimage effect. |
 
 ---
 

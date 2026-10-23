@@ -3,6 +3,7 @@ package com.evandev.afterimages.client;
 import com.evandev.afterimages.access.AfterimageAccessor;
 import com.evandev.afterimages.config.ModConfig;
 import com.evandev.afterimages.data.AfterimageConfigLoader;
+import com.evandev.afterimages.effect.AfterimageEffects;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -50,12 +51,13 @@ public class AfterimageRenderer {
         var history = accessor.afterimages$getHistory();
         if (history.isEmpty()) return;
 
-        var config = AfterimageConfigLoader.CONFIGS.get(entity.getType());
+        boolean fromEffect = AfterimageEffects.hasAfterimage(entity);
+        var config = AfterimageConfigLoader.getConfig(entity, fromEffect);
         if (config == null) return;
 
         TransparencyBufferSource transparencyBuffer = new TransparencyBufferSource(buffer);
         TransparencyBufferSource.CURRENT_INSTANCE = transparencyBuffer;
-        transparencyBuffer.setColor(config.color());
+        transparencyBuffer.setColor(fromEffect ? ModConfig.get().effect_color : config.color());
         transparencyBuffer.setOverlayOnly(config.overlayOnly());
 
         Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
