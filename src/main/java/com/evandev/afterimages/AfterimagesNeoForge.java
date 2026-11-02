@@ -1,23 +1,18 @@
 package com.evandev.afterimages;
 
 //? if neoforge {
-/*import com.evandev.afterimages.config.ClothConfigIntegration;
+/*import com.evandev.afterimages.client.NeoForgeClientEvents;
 import com.evandev.afterimages.effect.AfterimageEffects;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.alchemy.Potion;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLConstructModEvent;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import org.jetbrains.annotations.NotNull;
 
 @Mod(Constants.MOD_ID)
 public class AfterimagesNeoForge {
@@ -28,18 +23,8 @@ public class AfterimagesNeoForge {
         CommonClass.init();
         registerEffects(eventBus);
 
-        if (Platform.isModLoaded("cloth_config")) {
-            eventBus.register(new Object() {
-                @SubscribeEvent
-                public void onConstructMod(FMLConstructModEvent event) {
-                    ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class, () -> new IConfigScreenFactory() {
-                        @Override
-                        public @NotNull Screen createScreen(@NotNull ModContainer modContainer, @NotNull Screen parent) {
-                            return ClothConfigIntegration.createScreen(parent);
-                        }
-                    });
-                }
-            });
+        if (FMLEnvironment.dist == Dist.CLIENT && Platform.isModLoaded("cloth_config")) {
+            NeoForgeClientEvents.registerConfigScreen();
         }
     }
 

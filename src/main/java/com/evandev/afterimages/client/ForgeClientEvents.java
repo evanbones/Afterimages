@@ -2,14 +2,26 @@ package com.evandev.afterimages.client;
 
 //? if forge {
 /*import com.evandev.afterimages.Constants;
+import com.evandev.afterimages.config.ClothConfigIntegration;
 import com.evandev.afterimages.data.AfterimageConfigLoader;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = Constants.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ForgeClientEvents {
+    public static void registerConfigScreen() {
+        ModLoadingContext.get().registerExtensionPoint(
+                ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory(
+                        (client, parent) -> ClothConfigIntegration.createScreen(parent)
+                )
+        );
+    }
+
     @SubscribeEvent
     public static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(new AfterimageConfigLoader());
